@@ -35,12 +35,26 @@ export class PlacesController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updatePlaceDto: Partial<Place>) {
-    return this.placesService.update(id, updatePlaceDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async update(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updatePlaceDto: Partial<Place>
+  ) {
+    const payload: Partial<Place> = { ...updatePlaceDto };
+
+    if (file) {
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      payload.imageUrl = imageUrl;
+    }
+
+    const updated = await this.placesService.update(id, payload);
+    return { message: 'Lugar actualizado', place: updated };
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.placesService.remove(id);
+    await this.placesService.remove(id);
+    return { message: 'Lugar eliminado' };
   }
 }

@@ -5,6 +5,9 @@ export type PlaceDocument = Place & Document;
 
 @Schema()
 export class Place {
+  @Prop()
+  id: string;
+
   @Prop({ required: true })
   name: string;
 
@@ -12,13 +15,19 @@ export class Place {
   description: string;
 
   @Prop({ required: true })
-  latitude: number;
+  type: string;
 
   @Prop({ required: true })
-  longitude: number;
+  x: number;
+
+  @Prop({ required: true })
+  y: number;
 
   @Prop({ required: false }) 
   imageUrl?: string;
+
+  @Prop({ required: false })
+  iconSize?: string;
 }
 
-export const PlaceSchema = SchemaFactory.createForClass(Place);
+export const PlaceSchema = SchemaFactory.createForClass(Place); 
