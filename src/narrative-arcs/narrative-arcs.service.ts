@@ -68,6 +68,8 @@ export class NarrativeArcsService {
     }
 
     const updateFields: Record<string, any> = {};
+    if (sessionData.title !== undefined)
+      updateFields['sessions.$.title'] = sessionData.title;
     if (sessionData.type !== undefined)
       updateFields['sessions.$.type'] = sessionData.type;
     if (sessionData.startLevel !== undefined)

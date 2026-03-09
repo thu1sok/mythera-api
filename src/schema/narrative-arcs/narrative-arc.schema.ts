@@ -3,10 +3,8 @@ import { Document, Types } from 'mongoose';
 
 export type NarrativeArcDocument = NarrativeArc & Document;
 
-@Schema({ _id: true })
+@Schema()
 export class Content {
-  @Prop()
-  _id: Types.ObjectId;
 
   @Prop({ required: true })
   title: string;
@@ -20,10 +18,8 @@ export class Content {
 
 export const ContentSchema = SchemaFactory.createForClass(Content);
 
-@Schema({ _id: true })
+@Schema()
 export class Player {
-  @Prop()
-  _id: Types.ObjectId;
 
   @Prop({ required: true })
   name: string;
@@ -37,16 +33,16 @@ export class Player {
 
 export const PlayerSchema = SchemaFactory.createForClass(Player);
 
-@Schema({ _id: true })
+@Schema()
 export class Session {
-  @Prop()
-  _id: Types.ObjectId;
+  @Prop({ required: true })
+  title: string;
 
   @Prop({ required: true, enum: ['Campaña', 'Quest', 'Oneshot', 'Bishot'] })
   type: string;
 
   @Prop({ required: true })
-  startLevel: number;
+  startLevel: string;
 
   @Prop({ type: [PlayerSchema], default: [] })
   players: Player[];
@@ -59,8 +55,6 @@ export const SessionSchema = SchemaFactory.createForClass(Session);
 
 @Schema({ timestamps: true })
 export class NarrativeArc {
-  @Prop()
-  _id: Types.ObjectId;
 
   @Prop({ required: true })
   title: string;
