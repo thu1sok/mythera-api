@@ -12,7 +12,7 @@ export class PlacesController {
   constructor(
     private readonly cloudinaryService: CloudinaryService,
     private readonly placesService: PlacesService
-  ) {}
+  ) { }
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
@@ -21,7 +21,7 @@ export class PlacesController {
     @Body() placeData: Place
   ) {
     const imageUrl = await this.cloudinaryService.uploadImage(file);
-    
+
     const newPlace = await this.placesService.create({ ...placeData, imageUrl });
 
     return { message: 'Lugar creado exitosamente', place: newPlace };
@@ -166,7 +166,11 @@ export class PlacesController {
     if (file) {
       imageUrl = await this.cloudinaryService.uploadImage(file);
     }
-    return this.placesService.addNpc(id, { ...dto, image: imageUrl || dto.image });
+
+    const payload = { ...dto };
+    if (imageUrl) payload.imageUrl = imageUrl;
+
+    return this.placesService.addNpc(id, payload);
   }
 
   @Patch(':id/npcs/:npcId')
@@ -181,7 +185,11 @@ export class PlacesController {
     if (file) {
       imageUrl = await this.cloudinaryService.uploadImage(file);
     }
-    return this.placesService.updateNpc(id, npcId, { ...dto, image: imageUrl || dto.image });
+
+    const payload = { ...dto };
+    if (imageUrl) payload.imageUrl = imageUrl;
+
+    return this.placesService.updateNpc(id, npcId, payload);
   }
 
   @Delete(':id/npcs/:npcId')

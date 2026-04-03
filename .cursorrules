@@ -1,0 +1,25 @@
+# Mythera Map API - AI Context & Guidelines
+
+## 🚀 Tech Stack
+- **Framework:** NestJS (v10)
+- **Database:** MongoDB (via Mongoose & `@nestjs/mongoose`)
+- **File Uploads:** Multer + Cloudinary (`multer-storage-cloudinary`)
+- **Validation:** `class-validator` & `class-transformer`
+- **Linting & Formatting:** ESLint + Prettier
+
+## 🏗️ Architecture & Best Practices
+- **Modular Structure:** Follow standard NestJS architecture (Module -> Controller -> Service). 
+- **Schemas:** MongoDB Schemas are generally defined in `src/schema` (or alongside the feature). Use `@Schema()` and `@Prop()` decorators.
+- **DTOs:** Always use Data Transfer Objects (DTOs) for incoming requests and apply validation decorators (e.g., `@IsString()`, `@IsOptional()`).
+- **Dependency Injection:** Leverage NestJS DI container for services and repositories.
+- **Error Handling:** Use built-in NestJS exceptions (e.g., `NotFoundException`, `BadRequestException`).
+
+## 🤖 AI Assistant Rules
+- **Type Safety:** Always write strict TypeScript. Avoid `any`.
+- **Imports:** Use correct relative imports (or path aliases if configured in tsconfig).
+- **File Naming:** Use kebab-case for files (`feature.controller.ts`, `feature.service.ts`).
+- **Clean Code:** Write small, testable, and focused functions. Keep controllers thin (only handling HTTP req/res) and put business logic in services.
+- **Async/Await:** Always use `async/await` for database and asynchronous operations.
+- **Context Awareness & Updates:** Siempre que modifiques significativamente un feature (module), revisa su archivo `CONTEXT.md`. Si tus cambios alteran la arquitectura, reglas de negocio o funcionamiento, **debes actualizar el `CONTEXT.md`** proactivamente para mantenerlo sincronizado.
+- **Adaptive Code Style:** Si el usuario hace una sugerencia sobre estilos de código, refactorización o patrones durante la conversación, adapta ese estilo para el resto de la sesión y añádelo permanentemente a estas reglas (`.cursorrules`) si aplica globalmente.
+- **Test Scripts Cleanup:** Cuando crees un script temporal de prueba o testeo (ej. para verificar estado de base de datos o APIs), **siempre bórralo** del entorno de trabajo una vez que hayas terminado de utilizarlo.

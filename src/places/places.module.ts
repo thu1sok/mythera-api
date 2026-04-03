@@ -1,16 +1,21 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PlacesService } from './places.service';
+import { Place, PlaceSchema } from 'src/schema/places/places.schema';
+import { Npc, NpcSchema } from '../schema/wiki/npc.schema';
 import { PlacesController } from './places.controller';
-import { Place, PlaceSchema } from '../schema/places/places.schema';
-import { SharedModule } from 'src/shared/shared.module';
+import { PlacesService } from './places.service';
+import { SharedModule } from '../shared/shared.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Place.name, schema: PlaceSchema }]),
+    MongooseModule.forFeature([
+      { name: Place.name, schema: PlaceSchema },
+      { name: Npc.name, schema: NpcSchema }
+    ]),
     SharedModule
   ],
   controllers: [PlacesController],
   providers: [PlacesService],
+  exports: [PlacesService],
 })
 export class PlacesModule {}

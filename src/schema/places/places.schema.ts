@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 
 export type PlaceDocument = Place & Document;
 
@@ -13,27 +13,7 @@ export class NamedDescription {
 }
 export const NamedDescriptionSchema = SchemaFactory.createForClass(NamedDescription);
 
-@Schema()
-export class Npc {
-  @Prop({ required: true })
-  id: string;
 
-  @Prop({ required: true })
-  name: string;
-
-  @Prop()
-  title?: string;
-
-  @Prop()
-  image?: string;
-
-  @Prop()
-  descriptionHtml?: string;
-
-  @Prop()
-  personality?: string;
-}
-export const NpcSchema = SchemaFactory.createForClass(Npc);
 
 @Schema()
 export class PlaceDetails {
@@ -55,8 +35,8 @@ export class PlaceDetails {
   @Prop({ type: [NamedDescriptionSchema], default: [] })
   placesOfInterest?: NamedDescription[];
 
-  @Prop({ type: [NpcSchema], default: [] })
-  npcs?: Npc[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Npc' }], default: [] })
+  npcs?: Types.ObjectId[];
 }
 export const PlaceDetailsSchema = SchemaFactory.createForClass(PlaceDetails);
 

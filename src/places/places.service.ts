@@ -1,16 +1,68 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Place, PlaceDocument } from 'src/schema/places/places.schema';
 import { UpdatePlaceCreaturesDto } from './dtos/update-place-creatures.dto';
+import { Npc, NpcDocument } from '../schema/wiki/npc.schema';
 
 const INITIAL_FIELDS = '_id id name description type x y imageUrl iconSize';
 
-@Injectable()
-export class PlacesService {
+export class PlacesService implements OnModuleInit {
   constructor(
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
+    @InjectModel(Npc.name) private npcModel: Model<NpcDocument>,
   ) {}
+
+  async onModuleInit() {
+    console.log('Checking for embedded NPCs to migrate...');
+    try {
+      // Find places where npcs is an array
+      const placesWithEmbeddedNpcs = await this.placeModel.find({
+        'details.npcs': { $exists: true, $not: { $size: 0 } }
+      }).exec();
+
+      let migratedCount = 0;
+      for (const place of placesWithEmbeddedNpcs) {
+        if (place.details && place.details.npcs && place.details.npcs.length > 0) {
+          const npcsToMigrate = place.details.npcs.filter((npc: any) => npc && (npc.name || typeof npc.id === 'string'));
+          
+          if (npcsToMigrate.length > 0) {
+            const newNpcIds = [];
+            
+            for (const rawNpc of place.details.npcs) {
+              const npcData: any = rawNpc;
+              if (npcData && (npcData.name || typeof npcData.id === 'string')) {
+                const newNpc = new this.npcModel({
+                  name: npcData.name,
+                  title: npcData.title,
+                  imageUrl: npcData.image, // Map old 'image' to 'imageUrl'
+                  descriptionHtml: npcData.descriptionHtml,
+                  personality: npcData.personality,
+                  placeId: place._id
+                });
+                const savedNpc = await newNpc.save();
+                newNpcIds.push(savedNpc._id);
+                migratedCount++;
+              } else if (Types.ObjectId.isValid(npcData as any)) {
+                newNpcIds.push(npcData);
+              } else if (npcData && npcData._id) {
+                 newNpcIds.push(npcData._id);
+              }
+            }
+
+            await this.placeModel.findByIdAndUpdate(place._id, {
+              $set: { 'details.npcs': newNpcIds }
+            });
+          }
+        }
+      }
+      if (migratedCount > 0) {
+        console.log(`Successfully migrated ${migratedCount} embedded NPCs to standalone collection.`);
+      }
+    } catch (e) {
+      console.error('Error during NPC migration', e);
+    }
+  }
 
   async create(createPlaceDto: Partial<Place>): Promise<Place> {
     const newPlace = new this.placeModel(createPlaceDto);
@@ -27,6 +79,7 @@ export class PlacesService {
   async findOneDetails(id: string): Promise<Place> {
     const place = await this.placeModel
       .findOne({ id })
+      .populate('details.npcs')
       .lean()
       .exec();
 
@@ -38,6 +91,7 @@ export class PlacesService {
   async findOneDetailsById(_id: string): Promise<Place> {
     const place = await this.placeModel
       .findById(_id)
+      .populate('details.npcs')
       .lean()
       .exec();
 
@@ -297,16 +351,22 @@ export class PlacesService {
   }
 
   async addNpc(placeId: string, dto: any) {
+    // Determine the actual ObjectId of the place (placeId argument might be the map 'id' string or the _id)
+    // Actually, placesService methods take _id mostly. Let's assume _id since it's used in Types.ObjectId
+    const npc = new this.npcModel({ ...dto, placeId: new Types.ObjectId(placeId) });
+    const created = await npc.save();
+
     const place = await this.placeModel.findByIdAndUpdate(
       placeId,
-      { $push: { 'details.npcs': dto } },
+      { $push: { 'details.npcs': created._id } },
       { new: true },
-    );
+    ).populate('details.npcs');
 
     if (!place) throw new NotFoundException('Place not found');
 
-    const created = place.details?.npcs?.[place.details.npcs.length - 1];
-    return created;
+    // Return the newly populated NPC
+    const populatedNpcs: any[] = place.details?.npcs || [];
+    return populatedNpcs.find(n => n._id.toString() === created._id.toString());
   }
 
   async updateNpc(placeId: string, npcId: string, dto: any) {
@@ -314,27 +374,13 @@ export class PlacesService {
       throw new BadRequestException('Invalid NPC id');
     }
 
-    const updateFields: Record<string, any> = {};
-    if (dto.name !== undefined) updateFields['details.npcs.$.name'] = dto.name;
-    if (dto.title !== undefined) updateFields['details.npcs.$.title'] = dto.title;
-    if (dto.image !== undefined) updateFields['details.npcs.$.image'] = dto.image;
-    if (dto.descriptionHtml !== undefined) updateFields['details.npcs.$.descriptionHtml'] = dto.descriptionHtml;
-    if (dto.personality !== undefined) updateFields['details.npcs.$.personality'] = dto.personality;
+    const updated = await this.npcModel.findByIdAndUpdate(
+      npcId,
+      { $set: dto },
+      { new: true }
+    ).exec();
 
-    const place = await this.placeModel.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(placeId),
-        'details.npcs._id': new Types.ObjectId(npcId),
-      },
-      { $set: updateFields },
-      { new: true },
-    );
-
-    if (!place) throw new NotFoundException('Place or NPC not found');
-
-    const updated = place.details?.npcs?.find(
-      (n: any) => n._id.toString() === npcId,
-    );
+    if (!updated) throw new NotFoundException('NPC not found');
     return updated;
   }
 
@@ -343,11 +389,13 @@ export class PlacesService {
       throw new BadRequestException('Invalid NPC id');
     }
 
+    await this.npcModel.findByIdAndDelete(npcId).exec();
+
     const place = await this.placeModel.findByIdAndUpdate(
       placeId,
       {
         $pull: {
-          'details.npcs': { _id: new Types.ObjectId(npcId) },
+          'details.npcs': new Types.ObjectId(npcId),
         },
       },
       { new: true },
