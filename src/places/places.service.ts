@@ -11,10 +11,9 @@ export class PlacesService implements OnModuleInit {
   constructor(
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
     @InjectModel(Npc.name) private npcModel: Model<NpcDocument>,
-  ) {}
+  ) { }
 
   async onModuleInit() {
-    console.log('Checking for embedded NPCs to migrate...');
     try {
       // Find places where npcs is an array
       const placesWithEmbeddedNpcs = await this.placeModel.find({
@@ -25,10 +24,10 @@ export class PlacesService implements OnModuleInit {
       for (const place of placesWithEmbeddedNpcs) {
         if (place.details && place.details.npcs && place.details.npcs.length > 0) {
           const npcsToMigrate = place.details.npcs.filter((npc: any) => npc && (npc.name || typeof npc.id === 'string'));
-          
+
           if (npcsToMigrate.length > 0) {
             const newNpcIds = [];
-            
+
             for (const rawNpc of place.details.npcs) {
               const npcData: any = rawNpc;
               if (npcData && (npcData.name || typeof npcData.id === 'string')) {
@@ -46,7 +45,7 @@ export class PlacesService implements OnModuleInit {
               } else if (Types.ObjectId.isValid(npcData as any)) {
                 newNpcIds.push(npcData);
               } else if (npcData && npcData._id) {
-                 newNpcIds.push(npcData._id);
+                newNpcIds.push(npcData._id);
               }
             }
 
@@ -73,7 +72,7 @@ export class PlacesService implements OnModuleInit {
     return this.placeModel
       .find({}, INITIAL_FIELDS)
       .lean()
-      .exec();  
+      .exec();
   }
 
   async findOneDetails(id: string): Promise<Place> {
@@ -84,7 +83,7 @@ export class PlacesService implements OnModuleInit {
       .exec();
 
     if (!place) throw new NotFoundException('Place not found');
-    
+
     return place;
   }
 
@@ -96,7 +95,7 @@ export class PlacesService implements OnModuleInit {
       .exec();
 
     if (!place) throw new NotFoundException('Place not found');
-    
+
     return place;
   }
 
@@ -174,7 +173,7 @@ export class PlacesService implements OnModuleInit {
     );
 
     if (!place) throw new NotFoundException('Place not found');
-    
+
     const created = place.details?.objects?.[place.details.objects.length - 1];
     return created;
   }
