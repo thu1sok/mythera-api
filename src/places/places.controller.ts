@@ -6,6 +6,8 @@ import { CloudinaryService } from 'src/shared/services/cloudinary.service';
 import { UpdatePlaceDescriptionDto } from './dtos/update-place-description.dto';
 import { UpdatePlaceCreaturesDto } from './dtos/update-place-creatures.dto';
 import { AddNamedDescriptionDto } from './dtos/update-place-named-description.dto';
+import { CreatePlaceDto } from './dtos/create-place.dto';
+import { UpdatePlaceDto } from './dtos/update-place.dto';
 
 @Controller('places')
 export class PlacesController {
@@ -18,7 +20,7 @@ export class PlacesController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body() placeData: Place
+    @Body() placeData: CreatePlaceDto
   ) {
     const imageUrl = await this.cloudinaryService.uploadImage(file);
 
@@ -42,7 +44,7 @@ export class PlacesController {
   async update(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body() updatePlaceDto: Partial<Place>
+    @Body() updatePlaceDto: UpdatePlaceDto
   ) {
     const payload: Partial<Place> = { ...updatePlaceDto };
 
