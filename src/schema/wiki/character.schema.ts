@@ -26,6 +26,15 @@ export class Character {
 
     @Prop()
     backstory: string;
+    
+    @Prop([{
+        name: { type: String, required: true },
+        level: { type: Number, required: true, default: 1 }
+    }])
+    characterClasses: { name: string, level: number }[];
+
+    @Prop({ default: false })
+    isDead: boolean;
 
     @Prop([String])
     eventsAndAchievements: string[];

@@ -35,4 +35,11 @@ export class CreateCharacterDto {
     @IsString({ each: true })
     @IsOptional()
     plotItems?: string[];
+
+    @IsArray()
+    @IsOptional()
+    characterClasses?: { name: string, level: number }[];
+
+    @IsOptional()
+    isDead?: boolean;
 }

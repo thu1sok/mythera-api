@@ -3,6 +3,10 @@ import { IsString, IsArray, IsOptional, IsMongoId } from 'class-validator';
 export class UpdateCharacterDto {
     @IsString()
     @IsOptional()
+    characterName?: string;
+
+    @IsString()
+    @IsOptional()
     playerName?: string;
 
     @IsMongoId()
@@ -31,5 +35,12 @@ export class UpdateCharacterDto {
     @IsString({ each: true })
     @IsOptional()
     plotItems?: string[];
+
+    @IsArray()
+    @IsOptional()
+    characterClasses?: { name: string, level: number }[];
+
+    @IsOptional()
+    isDead?: boolean;
 }
 

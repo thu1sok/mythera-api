@@ -35,6 +35,12 @@ export class CharactersController {
         if (typeof payload.plotItems === 'string') {
             try { payload.plotItems = JSON.parse(payload.plotItems); } catch (e) { payload.plotItems = []; }
         }
+        if (typeof payload.characterClasses === 'string') {
+            try { payload.characterClasses = JSON.parse(payload.characterClasses); } catch (e) { payload.characterClasses = []; }
+        }
+        if (payload.isDead !== undefined) {
+            payload.isDead = String(payload.isDead) === 'true';
+        }
 
         return this.charactersService.create(payload as any);
     }
@@ -70,6 +76,12 @@ export class CharactersController {
         }
         if (typeof payload.plotItems === 'string') {
             try { payload.plotItems = JSON.parse(payload.plotItems); } catch (e) { }
+        }
+        if (typeof payload.characterClasses === 'string') {
+            try { payload.characterClasses = JSON.parse(payload.characterClasses); } catch (e) { }
+        }
+        if (payload.isDead !== undefined) {
+            payload.isDead = String(payload.isDead) === 'true';
         }
 
         return this.charactersService.update(id, payload as any);

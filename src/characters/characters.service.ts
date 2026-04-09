@@ -13,7 +13,8 @@ export class CharactersService {
 
     async create(createCharacterDto: CreateCharacterDto): Promise<Character> {
         const createdCharacter = new this.characterModel(createCharacterDto);
-        return createdCharacter.save();
+        const saved = await createdCharacter.save();
+        return this.findOne(saved._id.toString());
     }
 
     async findAll(): Promise<Character[]> {
@@ -39,6 +40,9 @@ export class CharactersService {
     async update(id: string, updateCharacterDto: UpdateCharacterDto): Promise<Character> {
         const existingCharacter = await this.characterModel
             .findByIdAndUpdate(id, updateCharacterDto, { new: true })
+            .populate('subraceId')
+            .populate('currentPlaceId')
+            .populate('deitiesIds')
             .exec();
 
         if (!existingCharacter) {

@@ -29,6 +29,9 @@ export class Player {
 
   @Prop({ required: true })
   level: number;
+
+  @Prop({ type: Types.ObjectId, ref: 'Character', required: false })
+  characterId?: Types.ObjectId;
 }
 
 export const PlayerSchema = SchemaFactory.createForClass(Player);
@@ -49,6 +52,9 @@ export class Session {
 
   @Prop({ type: [ContentSchema], default: [] })
   contents: Content[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Place' }], default: [] })
+  relatedPlaces: Types.ObjectId[];
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);

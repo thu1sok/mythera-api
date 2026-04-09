@@ -16,11 +16,20 @@ export class NarrativeArcsService {
   }
 
   async findAll(): Promise<NarrativeArc[]> {
-    return this.narrativeArcModel.find().lean().exec();
+    return this.narrativeArcModel.find()
+      .populate('sessions.relatedPlaces', '_id name')
+      .populate('sessions.players.characterId', '_id characterName playerName imageUrl')
+      .lean()
+      .exec();
   }
 
   async findById(id: string): Promise<NarrativeArc> {
-    const arc = await this.narrativeArcModel.findById(id).lean().exec();
+    const arc = await this.narrativeArcModel
+      .findById(id)
+      .populate('sessions.relatedPlaces', '_id name')
+      .populate('sessions.players.characterId', '_id characterName playerName imageUrl')
+      .lean()
+      .exec();
     if (!arc) {
       throw new NotFoundException('Narrative arc not found');
     }
@@ -78,6 +87,8 @@ export class NarrativeArcsService {
       updateFields['sessions.$.players'] = sessionData.players;
     if (sessionData.contents !== undefined)
       updateFields['sessions.$.contents'] = sessionData.contents;
+    if (sessionData.relatedPlaces !== undefined)
+      updateFields['sessions.$.relatedPlaces'] = sessionData.relatedPlaces;
 
     const arc = await this.narrativeArcModel.findOneAndUpdate(
       {
