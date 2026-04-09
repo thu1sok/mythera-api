@@ -12,6 +12,9 @@ export class Character {
     @Prop({ required: true })
     playerName: string;
 
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Player' })
+    playerId: Types.ObjectId;
+
     @Prop()
     imageUrl: string;
 

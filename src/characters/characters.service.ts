@@ -22,6 +22,7 @@ export class CharactersService {
             .populate('subraceId')
             .populate('currentPlaceId')
             .populate('deitiesIds')
+            .populate('playerId')
             .exec();
     }
 
@@ -30,6 +31,7 @@ export class CharactersService {
             .populate('subraceId')
             .populate('currentPlaceId')
             .populate('deitiesIds')
+            .populate('playerId')
             .exec();
         if (!character) {
             throw new NotFoundException(`Character #${id} not found`);
@@ -43,6 +45,7 @@ export class CharactersService {
             .populate('subraceId')
             .populate('currentPlaceId')
             .populate('deitiesIds')
+            .populate('playerId')
             .exec();
 
         if (!existingCharacter) {
