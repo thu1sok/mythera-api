@@ -38,6 +38,9 @@ export class FactionsController {
         if (typeof payload.npcIds === 'string') {
             try { payload.npcIds = JSON.parse(payload.npcIds); } catch (e) { }
         }
+        if (typeof payload.characterIds === 'string') {
+            try { payload.characterIds = JSON.parse(payload.characterIds); } catch (e) { }
+        }
         if (typeof payload.ranks === 'string') {
             try { payload.ranks = JSON.parse(payload.ranks); } catch (e) { payload.ranks = []; }
         }
@@ -68,6 +71,9 @@ export class FactionsController {
         }
         if (typeof payload.npcIds === 'string') {
             try { payload.npcIds = JSON.parse(payload.npcIds); } catch (e) { }
+        }
+        if (typeof payload.characterIds === 'string') {
+            try { payload.characterIds = JSON.parse(payload.characterIds); } catch (e) { }
         }
         if (typeof payload.ranks === 'string') {
             try { payload.ranks = JSON.parse(payload.ranks); } catch (e) { }

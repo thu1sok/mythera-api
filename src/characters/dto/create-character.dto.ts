@@ -15,6 +15,10 @@ export class CreateCharacterDto {
 
     @IsMongoId()
     @IsOptional()
+    factionId?: string;
+
+    @IsMongoId()
+    @IsOptional()
     currentPlaceId?: string;
 
     @IsArray()

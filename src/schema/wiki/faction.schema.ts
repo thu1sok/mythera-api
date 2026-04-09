@@ -46,6 +46,9 @@ export class Faction {
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Npc' }], default: [] })
     npcIds?: Types.ObjectId[];
+
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Character' }], default: [] })
+    characterIds?: Types.ObjectId[];
 }
 
 export const FactionSchema = SchemaFactory.createForClass(Faction);

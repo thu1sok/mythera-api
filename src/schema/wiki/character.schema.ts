@@ -24,6 +24,9 @@ export class Character {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Place' })
     currentPlaceId: Types.ObjectId;
 
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Faction' })
+    factionId: Types.ObjectId;
+
     @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'God' }])
     deitiesIds: Types.ObjectId[];
 
