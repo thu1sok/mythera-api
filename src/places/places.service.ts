@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Place, PlaceDocument } from 'src/schema/places/places.schema';
-import { UpdatePlaceCreaturesDto } from './dtos/update-place-creatures.dto';
 import { Npc, NpcDocument } from '../schema/wiki/npc.schema';
 
 const INITIAL_FIELDS = '_id id name description type x y imageUrl iconSize';
@@ -58,8 +57,47 @@ export class PlacesService implements OnModuleInit {
       if (migratedCount > 0) {
         console.log(`Successfully migrated ${migratedCount} embedded NPCs to standalone collection.`);
       }
+
+      // --- MIGRATION: Creatures & Legendary Creatures from string to NamedDescription[] ---
+      const placesToMigrateFauna = await this.placeModel.find({
+        $or: [
+          { 'details.creatures': { $type: 'string' } },
+          { 'details.legendaryCreatures': { $type: 'string' } },
+          { 'details.updates': { $type: 'string' } }
+        ]
+      }).lean().exec();
+
+      let faunaMigratedCount = 0;
+      for (const place of placesToMigrateFauna) {
+        const update: any = { $set: {} };
+        const details: any = place.details;
+
+        if (typeof details?.creatures === 'string') {
+          const val = details.creatures.trim();
+          update.$set['details.creatures'] = val ? [{ name: 'Fauna Registrada', description: val }] : [];
+        }
+
+        if (typeof details?.legendaryCreatures === 'string') {
+          const val = details.legendaryCreatures.trim();
+          update.$set['details.legendaryCreatures'] = val ? [{ name: 'Amenaza Legendaria Registrada', description: val }] : [];
+        }
+        
+        if (typeof details?.updates === 'string') {
+          const val = details.updates.trim();
+          update.$set['details.updates'] = val ? [{ name: 'Registro Antiguo', description: val }] : [];
+        }
+
+        if (Object.keys(update.$set).length > 0) {
+          await this.placeModel.updateOne({ _id: place._id }, update);
+          faunaMigratedCount++;
+        }
+      }
+      if (faunaMigratedCount > 0) {
+        console.log(`Successfully migrated strings data for ${faunaMigratedCount} places.`);
+      }
+
     } catch (e) {
-      console.error('Error during NPC migration', e);
+      console.error('Error during migration', e);
     }
   }
 
@@ -141,210 +179,44 @@ export class PlacesService implements OnModuleInit {
     return place;
   }
 
-  async updateCreatures(_id: string, dto: UpdatePlaceCreaturesDto) {
-    const update: Record<string, any> = {};
+  // --- GENERIC SUB-ITEM HANDLERS ---
 
-    if (dto.creatures !== undefined) {
-      update['details.creatures'] = dto.creatures;
-    }
-
-    if (dto.legendaryCreatures !== undefined) {
-      update['details.legendaryCreatures'] = dto.legendaryCreatures;
-    }
-
-    const place = await this.placeModel.findByIdAndUpdate(
-      _id,
-      { $set: update },
-      { new: true },
-    );
-
-    if (!place) {
-      throw new NotFoundException('Place not found');
-    }
-
-    return place;
-  }
-
-  async addObject(placeId: string, dto: { name: string; description: string }) {
-    const place = await this.placeModel.findByIdAndUpdate(
-      placeId,
-      { $push: { 'details.objects': dto } },
-      { new: true },
-    );
-
+  async addSubItem(placeId: string, category: string, dto: { name?: string; description?: string; imageUrl?: string }) {
+    const update: any = { $push: {} };
+    update.$push[`details.${category}`] = {
+      $each: [dto],
+      $position: 0
+    };
+    const place = await this.placeModel.findByIdAndUpdate(placeId, update, { new: true });
     if (!place) throw new NotFoundException('Place not found');
-
-    const created = place.details?.objects?.[place.details.objects.length - 1];
-    return created;
+    const list = (place.details as any)[category];
+    return list[list.length - 1];
   }
 
-  async updateObject(
-    placeId: string,
-    objectId: string,
-    dto: { name: string; description: string },
-  ) {
-    if (!Types.ObjectId.isValid(objectId)) {
-      throw new BadRequestException('Invalid object id');
+  async updateSubItem(placeId: string, category: string, itemId: string, dto: { name?: string; description?: string; imageUrl?: string }) {
+    if (!Types.ObjectId.isValid(itemId)) {
+      throw new BadRequestException('Invalid item id');
     }
+    const query: any = { _id: new Types.ObjectId(placeId) };
+    query[`details.${category}._id`] = new Types.ObjectId(itemId);
 
-    const place = await this.placeModel.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(placeId),
-        'details.objects._id': new Types.ObjectId(objectId),
-      },
-      {
-        $set: {
-          'details.objects.$.name': dto.name,
-          'details.objects.$.description': dto.description,
-        },
-      },
-      { new: true },
-    );
+    const update: any = { $set: {} };
+    if (dto.name !== undefined) update.$set[`details.${category}.$.name`] = dto.name;
+    if (dto.description !== undefined) update.$set[`details.${category}.$.description`] = dto.description;
+    if (dto.imageUrl !== undefined) update.$set[`details.${category}.$.imageUrl`] = dto.imageUrl;
 
-    if (!place) throw new NotFoundException('Place or object not found');
-
-    const updated = place.details?.objects?.find(
-      (o: any) => o._id.toString() === objectId,
-    );
-    return updated;
+    const place = await this.placeModel.findOneAndUpdate(query, update, { new: true });
+    if (!place) throw new NotFoundException('Place or item not found');
+    return ((place.details as any)[category] as any[]).find(i => i._id.toString() === itemId);
   }
 
-  async deleteObjectById(placeId: string, objectId: string) {
-    if (!Types.ObjectId.isValid(objectId)) {
-      throw new BadRequestException('Invalid object id');
+  async deleteSubItem(placeId: string, category: string, itemId: string) {
+    if (!Types.ObjectId.isValid(itemId)) {
+      throw new BadRequestException('Invalid item id');
     }
-
-    const place = await this.placeModel.findByIdAndUpdate(
-      placeId,
-      {
-        $pull: {
-          'details.objects': { _id: new Types.ObjectId(objectId) },
-        },
-      },
-      { new: true },
-    );
-
-    if (!place) {
-      throw new NotFoundException('Place not found');
-    }
-
-    return { ok: true };
-  }
-
-  async addArmyUnit(placeId: string, dto: { name: string; description: string }) {
-    const place = await this.placeModel.findByIdAndUpdate(
-      placeId,
-      { $push: { 'details.army': dto } },
-      { new: true },
-    );
-
-    if (!place) throw new NotFoundException('Place not found');
-
-    const created = place.details?.army?.[place.details.army.length - 1];
-    return created;
-  }
-
-  async updateArmyUnit(
-    placeId: string,
-    armyItemId: string,
-    dto: { name: string; description: string },
-  ) {
-    if (!Types.ObjectId.isValid(armyItemId)) {
-      throw new BadRequestException('Invalid army item id');
-    }
-
-    const place = await this.placeModel.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(placeId),
-        'details.army._id': new Types.ObjectId(armyItemId),
-      },
-      {
-        $set: {
-          'details.army.$.name': dto.name,
-          'details.army.$.description': dto.description,
-        },
-      },
-      { new: true },
-    );
-
-    if (!place) throw new NotFoundException('Place or army unit not found');
-
-    const updated = place.details?.army?.find(
-      (a: any) => a._id.toString() === armyItemId,
-    );
-    return updated;
-  }
-
-  async deleteArmyUnit(placeId: string, armyItemId: string) {
-    const place = await this.placeModel.findByIdAndUpdate(
-      placeId,
-      { $pull: { 'details.army': { _id: armyItemId } } },
-      { new: true },
-    );
-
-    if (!place) throw new NotFoundException('Place not found');
-    return { ok: true };
-  }
-
-  async addPlaceOfInterest(placeId: string, dto: { name: string; description: string }) {
-    const place = await this.placeModel.findByIdAndUpdate(
-      placeId,
-      { $push: { 'details.placesOfInterest': dto } },
-      { new: true },
-    );
-
-    if (!place) throw new NotFoundException('Place not found');
-
-    const created = place.details?.placesOfInterest?.[place.details.placesOfInterest.length - 1];
-    return created;
-  }
-
-  async updatePlaceOfInterest(
-    placeId: string,
-    placeOfInterestId: string,
-    dto: { name: string; description: string },
-  ) {
-    if (!Types.ObjectId.isValid(placeOfInterestId)) {
-      throw new BadRequestException('Invalid place of interest id');
-    }
-
-    const place = await this.placeModel.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(placeId),
-        'details.placesOfInterest._id': new Types.ObjectId(placeOfInterestId),
-      },
-      {
-        $set: {
-          'details.placesOfInterest.$.name': dto.name,
-          'details.placesOfInterest.$.description': dto.description,
-        },
-      },
-      { new: true },
-    );
-
-    if (!place) throw new NotFoundException('Place or place of interest not found');
-
-    const updated = place.details?.placesOfInterest?.find(
-      (p: any) => p._id.toString() === placeOfInterestId,
-    );
-    return updated;
-  }
-
-  async deletePlaceOfInterest(placeId: string, placeOfInterestId: string) {
-    if (!Types.ObjectId.isValid(placeOfInterestId)) {
-      throw new BadRequestException('Invalid place of interest id');
-    }
-
-    const place = await this.placeModel.findByIdAndUpdate(
-      placeId,
-      {
-        $pull: {
-          'details.placesOfInterest': { _id: new Types.ObjectId(placeOfInterestId) },
-        },
-      },
-      { new: true },
-    );
-
+    const update: any = { $pull: {} };
+    update.$pull[`details.${category}`] = { _id: new Types.ObjectId(itemId) };
+    const place = await this.placeModel.findByIdAndUpdate(placeId, update, { new: true });
     if (!place) throw new NotFoundException('Place not found');
     return { ok: true };
   }

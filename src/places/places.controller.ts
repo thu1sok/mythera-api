@@ -4,8 +4,7 @@ import { Place } from 'src/schema/places/places.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/shared/services/cloudinary.service';
 import { UpdatePlaceDescriptionDto } from './dtos/update-place-description.dto';
-import { UpdatePlaceCreaturesDto } from './dtos/update-place-creatures.dto';
-import { AddNamedDescriptionDto } from './dtos/update-place-named-description.dto';
+import { AddNamedDescriptionDto, UpdateNamedDescriptionDto } from './dtos/update-place-named-description.dto';
 import { CreatePlaceDto } from './dtos/create-place.dto';
 import { UpdatePlaceDto } from './dtos/update-place.dto';
 
@@ -86,75 +85,46 @@ export class PlacesController {
     return this.placesService.updateDescriptionHtml(id, dto.descriptionHtml);
   }
 
-  @Patch(':id/creatures')
-  updateCreatures(
-    @Param('id') id: string,
-    @Body() dto: UpdatePlaceCreaturesDto,
-  ) {
-    return this.placesService.updateCreatures(id, dto);
-  }
+  // --- GENERIC SUB-ITEM ENDPOINTS ---
 
-  @Patch(':id/objects')
-  addObject(@Param('id') id: string, @Body() dto: AddNamedDescriptionDto) {
-    return this.placesService.addObject(id, dto);
-  }
-
-  @Patch(':id/objects/:objectId')
-  updateObject(
+  @Patch(':id/:category')
+  @UseInterceptors(FileInterceptor('file'))
+  async addSubItem(
     @Param('id') id: string,
-    @Param('objectId') objectId: string,
+    @Param('category') category: string,
     @Body() dto: AddNamedDescriptionDto,
+    @UploadedFile() file: Express.Multer.File
   ) {
-    return this.placesService.updateObject(id, objectId, dto);
+    let imageUrl: string | undefined;
+    if (file) {
+      imageUrl = await this.cloudinaryService.uploadImage(file);
+    }
+    return this.placesService.addSubItem(id, category, { ...dto, imageUrl });
   }
 
-  @Delete(':id/objects/:objectId')
-  deleteObject(
+  @Patch(':id/:category/:itemId')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateSubItem(
     @Param('id') id: string,
-    @Param('objectId') objectId: string,
+    @Param('category') category: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateNamedDescriptionDto,
+    @UploadedFile() file: Express.Multer.File
   ) {
-    return this.placesService.deleteObjectById(id, objectId);
+    let imageUrl: string | undefined;
+    if (file) {
+      imageUrl = await this.cloudinaryService.uploadImage(file);
+    }
+    return this.placesService.updateSubItem(id, category, itemId, { ...dto, imageUrl });
   }
 
-  @Patch(':id/army')
-  addArmy(@Param('id') id: string, @Body() dto: AddNamedDescriptionDto) {
-    return this.placesService.addArmyUnit(id, dto);
-  }
-
-  @Patch(':id/army/:armyItemId')
-  updateArmy(
+  @Delete(':id/:category/:itemId')
+  deleteSubItem(
     @Param('id') id: string,
-    @Param('armyItemId') armyItemId: string,
-    @Body() dto: AddNamedDescriptionDto,
+    @Param('category') category: string,
+    @Param('itemId') itemId: string
   ) {
-    return this.placesService.updateArmyUnit(id, armyItemId, dto);
-  }
-
-  @Delete(':id/army/:armyItemId')
-  deleteArmy(@Param('id') id: string, @Param('armyItemId') armyItemId: string) {
-    return this.placesService.deleteArmyUnit(id, armyItemId);
-  }
-
-  @Patch(':id/places-of-interest')
-  addPlaceOfInterest(@Param('id') id: string, @Body() dto: AddNamedDescriptionDto) {
-    return this.placesService.addPlaceOfInterest(id, dto);
-  }
-
-  @Patch(':id/places-of-interest/:placeId')
-  updatePlaceOfInterest(
-    @Param('id') id: string,
-    @Param('placeId') placeId: string,
-    @Body() dto: AddNamedDescriptionDto,
-  ) {
-    return this.placesService.updatePlaceOfInterest(id, placeId, dto);
-  }
-
-  @Delete(':id/places-of-interest/:placeId')
-  deletePlaceOfInterest(
-    @Param('id') id: string,
-    @Param('placeId') placeId: string,
-  ) {
-    return this.placesService.deletePlaceOfInterest(id, placeId);
+    return this.placesService.deleteSubItem(id, category, itemId);
   }
 
   @Patch(':id/npcs')

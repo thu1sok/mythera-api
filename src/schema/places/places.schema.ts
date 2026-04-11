@@ -10,6 +10,9 @@ export class NamedDescription {
 
   @Prop({ required: true })
   description: string;
+
+  @Prop({ required: false })
+  imageUrl?: string;
 }
 export const NamedDescriptionSchema = SchemaFactory.createForClass(NamedDescription);
 
@@ -20,11 +23,14 @@ export class PlaceDetails {
   @Prop()
   descriptionHtml?: string;
 
-  @Prop()
-  creatures?: string;
+  @Prop({ type: [NamedDescriptionSchema], default: [] })
+  creatures?: NamedDescription[];
 
-  @Prop()
-  legendaryCreatures?: string;
+  @Prop({ type: [NamedDescriptionSchema], default: [] })
+  legendaryCreatures?: NamedDescription[];
+
+  @Prop({ type: [NamedDescriptionSchema], default: [] })
+  updates?: NamedDescription[];
 
   @Prop({ type: [NamedDescriptionSchema], default: [] })
   objects?: NamedDescription[];
@@ -37,6 +43,9 @@ export class PlaceDetails {
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Npc' }], default: [] })
   npcs?: Types.ObjectId[];
+
+  @Prop({ type: [String], default: [] })
+  gallery?: string[];
 }
 export const PlaceDetailsSchema = SchemaFactory.createForClass(PlaceDetails);
 

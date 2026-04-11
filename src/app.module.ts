@@ -26,7 +26,10 @@ dotenv.config();
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.MONGODB_URI),
+    MongooseModule.forRoot(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      family: 4,
+    }),
     ConfigModule.forRoot(),
     PlacesModule,
     NarrativeArcsModule,
