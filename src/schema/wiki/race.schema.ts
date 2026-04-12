@@ -13,6 +13,15 @@ export class Race {
 
     @Prop()
     description: string;
+
+    @Prop({
+        type: {
+            title: { type: String },
+            description: { type: String }
+        },
+        _id: false
+    })
+    hereditaryTrait?: { title: string; description: string };
 }
 
 export const RaceSchema = SchemaFactory.createForClass(Race);

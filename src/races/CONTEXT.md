@@ -10,6 +10,7 @@ Este módulo gestiona las **Razas (Races)** y sus respectivas **Subrazas (Subrac
   - `name`: Nombre de la Raza.
   - `imageUrl`: Imagen de la raza (subida a Cloudinary).
   - `description`: Descripción general.
+  - `hereditaryTrait`: Objeto `{ title, description }` que heredan todas sus subrazas.
   
 - **Subrace (`subrace.schema.ts`)**: 
   - `raceId`: Referencia a la `Race` (`Types.ObjectId`). **Relación 1:N** (Una raza tiene muchas subrazas).

@@ -33,6 +33,12 @@ export class RacesController {
             payload.imageUrl = await this.cloudinaryService.uploadImage(file);
         }
 
+        if (typeof payload.hereditaryTrait === 'string') {
+            try {
+                payload.hereditaryTrait = JSON.parse(payload.hereditaryTrait);
+            } catch (e) { }
+        }
+
         return this.racesService.create(payload);
     }
 
@@ -47,6 +53,12 @@ export class RacesController {
 
         if (file) {
             payload.imageUrl = await this.cloudinaryService.uploadImage(file);
+        }
+
+        if (typeof payload.hereditaryTrait === 'string') {
+            try {
+                payload.hereditaryTrait = JSON.parse(payload.hereditaryTrait);
+            } catch (e) { }
         }
 
         return this.racesService.update(id, payload);
