@@ -74,17 +74,56 @@ export class NarrativeArcsController {
 
   // Session endpoints
   @Post(':id/sessions')
-  async addSession(@Param('id') id: string, @Body() sessionData: any) {
+  @UseInterceptors(FileInterceptor('file'))
+  async addSession(
+    @Param('id') id: string,
+    @Body() sessionData: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      sessionData.imageUrl = imageUrl;
+    }
+
+    // Parse JSON strings if coming from FormData
+    if (typeof sessionData.players === 'string') {
+      sessionData.players = JSON.parse(sessionData.players);
+    }
+    if (typeof sessionData.contents === 'string') {
+      sessionData.contents = JSON.parse(sessionData.contents);
+    }
+    if (typeof sessionData.relatedPlaces === 'string') {
+      sessionData.relatedPlaces = JSON.parse(sessionData.relatedPlaces);
+    }
+
     const session = await this.narrativeArcsService.addSession(id, sessionData);
     return { message: 'Session added successfully', session };
   }
 
   @Patch(':id/sessions/:sessionId')
+  @UseInterceptors(FileInterceptor('file'))
   async updateSession(
     @Param('id') id: string,
     @Param('sessionId') sessionId: string,
     @Body() sessionData: any,
+    @UploadedFile() file: Express.Multer.File,
   ) {
+    if (file) {
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      sessionData.imageUrl = imageUrl;
+    }
+
+    // Parse JSON strings if coming from FormData
+    if (typeof sessionData.players === 'string') {
+      sessionData.players = JSON.parse(sessionData.players);
+    }
+    if (typeof sessionData.contents === 'string') {
+      sessionData.contents = JSON.parse(sessionData.contents);
+    }
+    if (typeof sessionData.relatedPlaces === 'string') {
+      sessionData.relatedPlaces = JSON.parse(sessionData.relatedPlaces);
+    }
+
     const session = await this.narrativeArcsService.updateSession(
       id,
       sessionId,

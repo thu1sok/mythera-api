@@ -89,6 +89,8 @@ export class NarrativeArcsService {
       updateFields['sessions.$.contents'] = sessionData.contents;
     if (sessionData.relatedPlaces !== undefined)
       updateFields['sessions.$.relatedPlaces'] = sessionData.relatedPlaces;
+    if (sessionData.imageUrl !== undefined)
+      updateFields['sessions.$.imageUrl'] = sessionData.imageUrl;
 
     const arc = await this.narrativeArcModel.findOneAndUpdate(
       {

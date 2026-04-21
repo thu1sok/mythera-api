@@ -55,6 +55,9 @@ export class Session {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Place' }], default: [] })
   relatedPlaces: Types.ObjectId[];
+
+  @Prop()
+  imageUrl?: string;
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);
