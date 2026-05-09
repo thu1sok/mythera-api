@@ -15,6 +15,7 @@ import { RulesModule } from './rules/rules.module';
 import { HistoricalEventsModule } from './historical-events/historical-events.module';
 import { PlayersModule } from './players/players.module';
 import { WikiHomeModule } from './wiki-home/wiki-home.module';
+import { RegionsModule } from './regions/regions.module';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 
@@ -46,6 +47,7 @@ dotenv.config();
     PlayersModule,
     AuthModule,
     UsersModule,
+    RegionsModule,
     WikiHomeModule,
   ],
   exports: [],

@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Place, PlaceDocument } from 'src/schema/places/places.schema';
 import { Npc, NpcDocument } from '../schema/wiki/npc.schema';
+import { RegionDocument } from 'src/schema/regions/regions.schema';
 
 const INITIAL_FIELDS = '_id id name description type x y imageUrl iconSize';
 
@@ -10,7 +11,14 @@ export class PlacesService implements OnModuleInit {
   constructor(
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
     @InjectModel(Npc.name) private npcModel: Model<NpcDocument>,
+    @InjectModel('Region') private regionModel: Model<RegionDocument>,
   ) { }
+
+  private async getModelForId(id: string): Promise<Model<any>> {
+    if (await this.placeModel.exists({ _id: id })) return this.placeModel;
+    if (await this.regionModel.exists({ _id: id })) return this.regionModel;
+    throw new NotFoundException('Place or Region not found');
+  }
 
   async onModuleInit() {
     try {
@@ -125,31 +133,50 @@ export class PlacesService implements OnModuleInit {
     return place;
   }
 
-  async findOneDetailsById(_id: string): Promise<Place> {
+  async findOneDetailsById(_id: string): Promise<any> {
     const place = await this.placeModel
       .findById(_id)
       .populate('details.npcs')
       .lean()
       .exec();
 
-    if (!place) throw new NotFoundException('Place not found');
+    if (place) return place;
 
-    return place;
+    const region = await this.regionModel
+      .findById(_id)
+      .lean()
+      .exec();
+      
+    if (region) return region;
+
+    throw new NotFoundException('Place/Region not found');
   }
 
-  async update(id: string, updatePlaceDto: Partial<Place>): Promise<Place> {
-    return this.placeModel.findByIdAndUpdate(id, updatePlaceDto, {
+  async update(id: string, updatePlaceDto: Partial<Place>): Promise<any> {
+    const model = await this.getModelForId(id);
+    return model.findByIdAndUpdate(id, updatePlaceDto, {
       new: true,
     }).exec();
   }
 
-  async updateImage(id: string, imageUrl: string): Promise<Place> {
-    const place = await this.placeModel.findByIdAndUpdate(
+  async updateDescriptionHtml(id: string, descriptionHtml: string) {
+    const model = await this.getModelForId(id);
+    const place = await model.findByIdAndUpdate(
       id,
-      { imageUrl },
-      { new: true },
-    ).exec();
+      { $set: { 'details.descriptionHtml': descriptionHtml } },
+      { new: true }
+    );
+    if (!place) throw new NotFoundException('Place not found');
+    return { ok: true };
+  }
 
+  async updateImage(id: string, imageUrl: string) {
+    const model = await this.getModelForId(id);
+    const place = await model.findByIdAndUpdate(
+      id,
+      { $set: { 'imageUrl': imageUrl } },
+      { new: true }
+    );
     if (!place) throw new NotFoundException('Place not found');
     return place;
   }
@@ -158,36 +185,16 @@ export class PlacesService implements OnModuleInit {
     return this.placeModel.findByIdAndDelete(id).exec();
   }
 
-  async updateDescriptionHtml(_id: string, descriptionHtml: string) {
-    const place = await this.placeModel.findByIdAndUpdate(
-      _id,
-      {
-        $set: {
-          'details.descriptionHtml': descriptionHtml,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
-
-    if (!place) {
-      throw new NotFoundException('Place not found');
-    }
-
-    return place;
-  }
-
   // --- GENERIC SUB-ITEM HANDLERS ---
 
   async addSubItem(placeId: string, category: string, dto: { name?: string; description?: string; imageUrl?: string }) {
+    const model = await this.getModelForId(placeId);
     const update: any = { $push: {} };
     update.$push[`details.${category}`] = {
       $each: [dto],
       $position: 0
     };
-    const place = await this.placeModel.findByIdAndUpdate(placeId, update, { new: true });
+    const place = await model.findByIdAndUpdate(placeId, update, { new: true });
     if (!place) throw new NotFoundException('Place not found');
     const list = (place.details as any)[category];
     return list[list.length - 1];
@@ -197,6 +204,7 @@ export class PlacesService implements OnModuleInit {
     if (!Types.ObjectId.isValid(itemId)) {
       throw new BadRequestException('Invalid item id');
     }
+    const model = await this.getModelForId(placeId);
     const query: any = { _id: new Types.ObjectId(placeId) };
     query[`details.${category}._id`] = new Types.ObjectId(itemId);
 
@@ -205,29 +213,29 @@ export class PlacesService implements OnModuleInit {
     if (dto.description !== undefined) update.$set[`details.${category}.$.description`] = dto.description;
     if (dto.imageUrl !== undefined) update.$set[`details.${category}.$.imageUrl`] = dto.imageUrl;
 
-    const place = await this.placeModel.findOneAndUpdate(query, update, { new: true });
+    const place = await model.findOneAndUpdate(query, update, { new: true });
     if (!place) throw new NotFoundException('Place or item not found');
-    return ((place.details as any)[category] as any[]).find(i => i._id.toString() === itemId);
+    return ((place.details as any)[category] as any[]).find((i: any) => i._id.toString() === itemId);
   }
 
   async deleteSubItem(placeId: string, category: string, itemId: string) {
     if (!Types.ObjectId.isValid(itemId)) {
       throw new BadRequestException('Invalid item id');
     }
+    const model = await this.getModelForId(placeId);
     const update: any = { $pull: {} };
     update.$pull[`details.${category}`] = { _id: new Types.ObjectId(itemId) };
-    const place = await this.placeModel.findByIdAndUpdate(placeId, update, { new: true });
+    const place = await model.findByIdAndUpdate(placeId, update, { new: true });
     if (!place) throw new NotFoundException('Place not found');
     return { ok: true };
   }
 
   async addNpc(placeId: string, dto: any) {
-    // Determine the actual ObjectId of the place (placeId argument might be the map 'id' string or the _id)
-    // Actually, placesService methods take _id mostly. Let's assume _id since it's used in Types.ObjectId
     const npc = new this.npcModel({ ...dto, placeId: new Types.ObjectId(placeId) });
     const created = await npc.save();
 
-    const place = await this.placeModel.findByIdAndUpdate(
+    const model = await this.getModelForId(placeId);
+    const place = await model.findByIdAndUpdate(
       placeId,
       { $push: { 'details.npcs': created._id } },
       { new: true },
@@ -235,45 +243,39 @@ export class PlacesService implements OnModuleInit {
 
     if (!place) throw new NotFoundException('Place not found');
 
-    // Return the newly populated NPC
     const populatedNpcs: any[] = place.details?.npcs || [];
-    return populatedNpcs.find(n => n._id.toString() === created._id.toString());
+    return populatedNpcs.find((n: any) => n._id.toString() === created._id.toString());
   }
 
   async updateNpc(placeId: string, npcId: string, dto: any) {
-    if (!Types.ObjectId.isValid(npcId)) {
-      throw new BadRequestException('Invalid NPC id');
-    }
-
+    if (!Types.ObjectId.isValid(npcId)) throw new BadRequestException('Invalid npc id');
+    
     const updated = await this.npcModel.findByIdAndUpdate(
       npcId,
       { $set: dto },
       { new: true }
-    ).exec();
-
+    );
     if (!updated) throw new NotFoundException('NPC not found');
-    return updated;
+
+    const model = await this.getModelForId(placeId);
+    const place = await model.findById(placeId).populate('details.npcs');
+    const populatedNpcs: any[] = place?.details?.npcs || [];
+    return populatedNpcs.find((n: any) => n._id.toString() === npcId);
   }
 
   async deleteNpc(placeId: string, npcId: string) {
-    if (!Types.ObjectId.isValid(npcId)) {
-      throw new BadRequestException('Invalid NPC id');
-    }
+    if (!Types.ObjectId.isValid(npcId)) throw new BadRequestException('Invalid npc id');
 
-    await this.npcModel.findByIdAndDelete(npcId).exec();
+    await this.npcModel.findByIdAndDelete(npcId);
 
-    const place = await this.placeModel.findByIdAndUpdate(
+    const model = await this.getModelForId(placeId);
+    const place = await model.findByIdAndUpdate(
       placeId,
-      {
-        $pull: {
-          'details.npcs': new Types.ObjectId(npcId),
-        },
-      },
-      { new: true },
+      { $pull: { 'details.npcs': new Types.ObjectId(npcId) } },
+      { new: true }
     );
 
     if (!place) throw new NotFoundException('Place not found');
     return { ok: true };
   }
 }
-
