@@ -4,6 +4,8 @@ import { Model, Types } from 'mongoose';
 import { Place, PlaceDocument } from 'src/schema/places/places.schema';
 import { Npc, NpcDocument } from '../schema/wiki/npc.schema';
 import { RegionDocument } from 'src/schema/regions/regions.schema';
+import { DurmientePlace, DurmientePlaceDocument } from 'src/schema/places/durmiente-places.schema';
+import { DurmienteRegion, DurmienteRegionDocument } from 'src/schema/regions/durmiente-regions.schema';
 
 const INITIAL_FIELDS = '_id id name description type x y imageUrl iconSize';
 
@@ -12,11 +14,15 @@ export class PlacesService implements OnModuleInit {
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
     @InjectModel(Npc.name) private npcModel: Model<NpcDocument>,
     @InjectModel('Region') private regionModel: Model<RegionDocument>,
+    @InjectModel(DurmientePlace.name) private durmientePlaceModel: Model<DurmientePlaceDocument>,
+    @InjectModel(DurmienteRegion.name) private durmienteRegionModel: Model<DurmienteRegionDocument>,
   ) { }
 
   private async getModelForId(id: string): Promise<Model<any>> {
     if (await this.placeModel.exists({ _id: id })) return this.placeModel;
+    if (await this.durmientePlaceModel.exists({ _id: id })) return this.durmientePlaceModel;
     if (await this.regionModel.exists({ _id: id })) return this.regionModel;
+    if (await this.durmienteRegionModel.exists({ _id: id })) return this.durmienteRegionModel;
     throw new NotFoundException('Place or Region not found');
   }
 
@@ -142,12 +148,18 @@ export class PlacesService implements OnModuleInit {
 
     if (place) return place;
 
+    const durmientePlace = await this.durmientePlaceModel.findById(_id).populate('details.npcs').lean().exec();
+    if (durmientePlace) return durmientePlace;
+
     const region = await this.regionModel
       .findById(_id)
       .lean()
       .exec();
       
     if (region) return region;
+
+    const durmienteRegion = await this.durmienteRegionModel.findById(_id).lean().exec();
+    if (durmienteRegion) return durmienteRegion;
 
     throw new NotFoundException('Place/Region not found');
   }

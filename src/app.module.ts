@@ -16,6 +16,9 @@ import { HistoricalEventsModule } from './historical-events/historical-events.mo
 import { PlayersModule } from './players/players.module';
 import { WikiHomeModule } from './wiki-home/wiki-home.module';
 import { RegionsModule } from './regions/regions.module';
+import { CompendiumModule } from './compendium/compendium.module';
+import { DurmientePlacesModule } from './durmiente-places/durmiente-places.module';
+import { DurmienteRegionsModule } from './durmiente-regions/durmiente-regions.module';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 
@@ -48,7 +51,10 @@ dotenv.config();
     AuthModule,
     UsersModule,
     RegionsModule,
+    DurmientePlacesModule,
+    DurmienteRegionsModule,
     WikiHomeModule,
+    CompendiumModule,
   ],
   exports: [],
   controllers: [],
@@ -59,4 +65,4 @@ dotenv.config();
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}
