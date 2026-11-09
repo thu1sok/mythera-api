@@ -24,6 +24,15 @@ import {
   CompendiumArchetype,
   CompendiumArchetypeDocument,
 } from '../schema/wiki/compendium/compendium-archetype.schema';
+import {
+  CompendiumRace,
+  CompendiumRaceDocument,
+} from '../schema/wiki/compendium/compendium-race.schema';
+import {
+  CompendiumItem,
+  CompendiumItemDocument,
+  ItemCategory,
+} from '../schema/wiki/compendium/compendium-item.schema';
 import { COMPENDIUM_CATALOGS } from '../schema/wiki/compendium/compendium-mechanics.types';
 import { DEFAULT_HUMAN_TRAITS } from './seeds/human-traits.seed';
 import { DEFAULT_ORIGIN_FEATS } from './seeds/origin-feats.seed';
@@ -32,6 +41,9 @@ import {
   DEFAULT_STYLES,
 } from './seeds/styles-and-archetypes.seed';
 import { DEFAULT_GENERAL_FEATS } from './seeds/general-feats.seed';
+import { DEFAULT_COMBAT_TECHNIQUES } from './seeds/combat-techniques.seed';
+import { DEFAULT_RACES } from './seeds/races.seed';
+import { DEFAULT_ITEMS } from './seeds/items.seed';
 
 @Injectable()
 export class CompendiumService implements OnModuleInit {
@@ -46,6 +58,10 @@ export class CompendiumService implements OnModuleInit {
     private readonly styleModel: Model<CompendiumStyleDocument>,
     @InjectModel(CompendiumArchetype.name)
     private readonly archetypeModel: Model<CompendiumArchetypeDocument>,
+    @InjectModel(CompendiumRace.name)
+    private readonly raceModel: Model<CompendiumRaceDocument>,
+    @InjectModel(CompendiumItem.name)
+    private readonly itemModel: Model<CompendiumItemDocument>,
   ) {}
 
   async onModuleInit() {
@@ -81,7 +97,22 @@ export class CompendiumService implements OnModuleInit {
         );
       }
 
-      // 4. Seed Styles
+      // 4. Seed Combat Techniques
+      for (const technique of DEFAULT_COMBAT_TECHNIQUES) {
+        await this.featModel.updateOne(
+          { slug: technique.slug },
+          {
+            $set: {
+              ...technique,
+              category: 'COMBAT_TECHNIQUE',
+              isDefault: true,
+            },
+          },
+          { upsert: true },
+        );
+      }
+
+      // 5. Seed Styles
       for (const style of DEFAULT_STYLES) {
         await this.styleModel.updateOne(
           { slug: style.slug },
@@ -90,11 +121,29 @@ export class CompendiumService implements OnModuleInit {
         );
       }
 
-      // 5. Seed Archetypes
+      // 6. Seed Archetypes
       for (const archetype of DEFAULT_ARCHETYPES) {
         await this.archetypeModel.updateOne(
           { slug: archetype.slug },
           { $set: { ...archetype, isDefault: true } },
+          { upsert: true },
+        );
+      }
+
+      // 7. Seed Races
+      for (const race of DEFAULT_RACES) {
+        await this.raceModel.updateOne(
+          { slug: race.slug },
+          { $set: { ...race, isDefault: true } },
+          { upsert: true },
+        );
+      }
+
+      // 8. Seed Items
+      for (const item of DEFAULT_ITEMS) {
+        await this.itemModel.updateOne(
+          { slug: item.slug },
+          { $set: { ...item, isDefault: true } },
           { upsert: true },
         );
       }
@@ -114,7 +163,7 @@ export class CompendiumService implements OnModuleInit {
     const base = (text || 'item')
       .toString()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[̀-ͯ]/g, '')
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
@@ -130,22 +179,36 @@ export class CompendiumService implements OnModuleInit {
   }
 
   async getFullExport() {
-    const [traits, originFeats, generalFeats, styles, archetypes] =
-      await Promise.all([
-        this.findAllTraits(),
-        this.findAllFeats('ORIGIN'),
-        this.findAllFeats('GENERAL'),
-        this.findAllStyles(),
-        this.findAllArchetypes(),
-      ]);
+    const [
+      traits,
+      originFeats,
+      generalFeats,
+      combatTechniques,
+      styles,
+      archetypes,
+      races,
+      items,
+    ] = await Promise.all([
+      this.findAllTraits(),
+      this.findAllFeats('ORIGIN'),
+      this.findAllFeats('GENERAL'),
+      this.findAllFeats('COMBAT_TECHNIQUE'),
+      this.findAllStyles(),
+      this.findAllArchetypes(),
+      this.findAllRaces(),
+      this.findAllItems(),
+    ]);
 
     return {
       catalogs: COMPENDIUM_CATALOGS,
       traits,
       originFeats,
       generalFeats,
+      combatTechniques,
       styles,
       archetypes,
+      races,
+      items,
     };
   }
 
@@ -200,7 +263,7 @@ export class CompendiumService implements OnModuleInit {
   }
 
   // ==========================================
-  // 2. DOTES DE ORIGEN Y GENERALES (FEATS)
+  // 2. DOTES DE ORIGEN, GENERALES Y TECNICAS DE COMBATE (FEATS)
   // ==========================================
   async findAllFeats(category?: FeatCategory): Promise<CompendiumFeat[]> {
     const filter = category ? { category } : {};
@@ -350,5 +413,109 @@ export class CompendiumService implements OnModuleInit {
       );
     }
     await this.archetypeModel.findByIdAndDelete(id).exec();
+  }
+
+  // ==========================================
+  // 5. RAZAS (RACES)
+  // ==========================================
+  async findAllRaces(): Promise<CompendiumRace[]> {
+    return this.raceModel.find().sort({ isDefault: -1, name: 1 }).exec();
+  }
+
+  async createRace(dto: Partial<CompendiumRace>): Promise<CompendiumRace> {
+    const payload = {
+      ...dto,
+      slug: this.slugify(dto.name || 'raza'),
+      isDefault: false,
+    };
+    const created = new this.raceModel(payload);
+    return created.save();
+  }
+
+  async updateRace(
+    id: string,
+    dto: Partial<CompendiumRace>,
+  ): Promise<CompendiumRace> {
+    const existing = await this.raceModel.findById(id).exec();
+    if (!existing) {
+      throw new NotFoundException('Raza no encontrada');
+    }
+    if (existing.isDefault) {
+      throw new ForbiddenException(
+        'Las razas por defecto del Compendio Durmiente no pueden ser editadas.',
+      );
+    }
+
+    const { isDefault, slug, ...safeUpdate } = dto as any;
+    return this.raceModel
+      .findByIdAndUpdate(id, { $set: safeUpdate }, { new: true })
+      .exec();
+  }
+
+  async deleteRace(id: string): Promise<void> {
+    const existing = await this.raceModel.findById(id).exec();
+    if (!existing) {
+      throw new NotFoundException('Raza no encontrada');
+    }
+    if (existing.isDefault) {
+      throw new ForbiddenException(
+        'Las razas por defecto del Compendio Durmiente no pueden ser eliminadas.',
+      );
+    }
+    await this.raceModel.findByIdAndDelete(id).exec();
+  }
+
+  // ==========================================
+  // 6. EQUIPO (ITEMS)
+  // ==========================================
+  async findAllItems(category?: ItemCategory): Promise<CompendiumItem[]> {
+    const filter = category ? { category } : {};
+    return this.itemModel
+      .find(filter)
+      .sort({ category: 1, costInCopper: 1, name: 1 })
+      .exec();
+  }
+
+  async createItem(dto: Partial<CompendiumItem>): Promise<CompendiumItem> {
+    const payload = {
+      ...dto,
+      slug: this.slugify(dto.name || 'objeto'),
+      isDefault: false,
+    };
+    const created = new this.itemModel(payload);
+    return created.save();
+  }
+
+  async updateItem(
+    id: string,
+    dto: Partial<CompendiumItem>,
+  ): Promise<CompendiumItem> {
+    const existing = await this.itemModel.findById(id).exec();
+    if (!existing) {
+      throw new NotFoundException('Objeto no encontrado');
+    }
+    if (existing.isDefault) {
+      throw new ForbiddenException(
+        'Los objetos por defecto del Compendio Durmiente no pueden ser editados.',
+      );
+    }
+
+    const { isDefault, slug, ...safeUpdate } = dto as any;
+    return this.itemModel
+      .findByIdAndUpdate(id, { $set: safeUpdate }, { new: true })
+      .exec();
+  }
+
+  async deleteItem(id: string): Promise<void> {
+    const existing = await this.itemModel.findById(id).exec();
+    if (!existing) {
+      throw new NotFoundException('Objeto no encontrado');
+    }
+    if (existing.isDefault) {
+      throw new ForbiddenException(
+        'Los objetos por defecto del Compendio Durmiente no pueden ser eliminados.',
+      );
+    }
+    await this.itemModel.findByIdAndDelete(id).exec();
   }
 }
