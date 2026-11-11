@@ -13,7 +13,7 @@ import { FeatCategory } from '../schema/wiki/compendium/compendium-feat.schema';
 
 @Controller('compendium')
 export class CompendiumController {
-  constructor(private readonly compendiumService: CompendiumService) {}
+  constructor(private readonly compendiumService: CompendiumService) { }
 
   // ==========================================
   // METADATA & CHARACTER CREATOR EXPORT
@@ -122,5 +122,18 @@ export class CompendiumController {
   async deleteArchetype(@Param('id') id: string) {
     await this.compendiumService.deleteArchetype(id);
     return { message: 'Arquetipo eliminado correctamente' };
+  }
+
+  // ==========================================
+  // 5. OBJETOS, ARMAS Y EQUIPO
+  // ==========================================
+  @Get('items')
+  async findAllItems(@Query('category') category?: string) {
+    return this.compendiumService.findAllItems(category);
+  }
+
+  @Get('items/:slug')
+  async findItemBySlug(@Param('slug') slug: string) {
+    return this.compendiumService.findItemBySlug(slug);
   }
 }

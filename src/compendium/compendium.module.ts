@@ -18,6 +18,10 @@ import {
   CompendiumArchetype,
   CompendiumArchetypeSchema,
 } from '../schema/wiki/compendium/compendium-archetype.schema';
+import {
+  CompendiumItem,
+  CompendiumItemSchema,
+} from '../schema/wiki/compendium/compendium-item.schema';
 
 @Module({
   imports: [
@@ -26,10 +30,11 @@ import {
       { name: CompendiumFeat.name, schema: CompendiumFeatSchema },
       { name: CompendiumStyle.name, schema: CompendiumStyleSchema },
       { name: CompendiumArchetype.name, schema: CompendiumArchetypeSchema },
+      { name: CompendiumItem.name, schema: CompendiumItemSchema },
     ]),
   ],
   controllers: [CompendiumController],
   providers: [CompendiumService],
   exports: [CompendiumService],
 })
-export class CompendiumModule {}
+export class CompendiumModule { }

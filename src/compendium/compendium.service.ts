@@ -24,6 +24,10 @@ import {
   CompendiumArchetype,
   CompendiumArchetypeDocument,
 } from '../schema/wiki/compendium/compendium-archetype.schema';
+import {
+  CompendiumItem,
+  CompendiumItemDocument,
+} from '../schema/wiki/compendium/compendium-item.schema';
 import { COMPENDIUM_CATALOGS } from '../schema/wiki/compendium/compendium-mechanics.types';
 import { DEFAULT_HUMAN_TRAITS } from './seeds/human-traits.seed';
 import { DEFAULT_ORIGIN_FEATS } from './seeds/origin-feats.seed';
@@ -32,6 +36,7 @@ import {
   DEFAULT_STYLES,
 } from './seeds/styles-and-archetypes.seed';
 import { DEFAULT_GENERAL_FEATS } from './seeds/general-feats.seed';
+import { DEFAULT_COMPENDIUM_ITEMS } from './seeds/items.seed';
 
 @Injectable()
 export class CompendiumService implements OnModuleInit {
@@ -46,7 +51,9 @@ export class CompendiumService implements OnModuleInit {
     private readonly styleModel: Model<CompendiumStyleDocument>,
     @InjectModel(CompendiumArchetype.name)
     private readonly archetypeModel: Model<CompendiumArchetypeDocument>,
-  ) {}
+    @InjectModel(CompendiumItem.name)
+    private readonly itemModel: Model<CompendiumItemDocument>,
+  ) { }
 
   async onModuleInit() {
     await this.seedDefaults();
@@ -99,6 +106,15 @@ export class CompendiumService implements OnModuleInit {
         );
       }
 
+      // 6. Seed Items (Weapons, Armors, Shields, Tools, Ammo)
+      for (const item of DEFAULT_COMPENDIUM_ITEMS) {
+        await this.itemModel.updateOne(
+          { slug: item.slug },
+          { $set: { ...item, isDefault: true } },
+          { upsert: true },
+        );
+      }
+
       this.logger.log(
         'Compendio Durmiente: Datos por defecto sincronizados correctamente.',
       );
@@ -130,13 +146,14 @@ export class CompendiumService implements OnModuleInit {
   }
 
   async getFullExport() {
-    const [traits, originFeats, generalFeats, styles, archetypes] =
+    const [traits, originFeats, generalFeats, styles, archetypes, items] =
       await Promise.all([
         this.findAllTraits(),
         this.findAllFeats('ORIGIN'),
         this.findAllFeats('GENERAL'),
         this.findAllStyles(),
         this.findAllArchetypes(),
+        this.findAllItems(),
       ]);
 
     return {
@@ -146,6 +163,7 @@ export class CompendiumService implements OnModuleInit {
       generalFeats,
       styles,
       archetypes,
+      items,
     };
   }
 
@@ -350,5 +368,20 @@ export class CompendiumService implements OnModuleInit {
       );
     }
     await this.archetypeModel.findByIdAndDelete(id).exec();
+  }
+
+  // ==========================================
+  // 5. OBJETOS, ARMAS Y EQUIPO (ITEMS)
+  // ==========================================
+  async findAllItems(category?: string): Promise<CompendiumItem[]> {
+    const filter: any = {};
+    if (category) {
+      filter.category = category;
+    }
+    return this.itemModel.find(filter).sort({ category: 1, name: 1 }).exec();
+  }
+
+  async findItemBySlug(slug: string): Promise<CompendiumItem | null> {
+    return this.itemModel.findOne({ slug }).exec();
   }
 }
