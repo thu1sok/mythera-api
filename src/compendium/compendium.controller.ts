@@ -14,7 +14,7 @@ import { ItemCategory } from '../schema/wiki/compendium/compendium-item.schema';
 
 @Controller('compendium')
 export class CompendiumController {
-  constructor(private readonly compendiumService: CompendiumService) {}
+  constructor(private readonly compendiumService: CompendiumService) { }
 
   // ==========================================
   // METADATA & CHARACTER CREATOR EXPORT

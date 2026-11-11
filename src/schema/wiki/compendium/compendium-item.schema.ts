@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type CompendiumItemDocument = CompendiumItem & Document;
 
-export type ItemCategory =
+  export type ItemCategory =
   | 'WEAPON'
   | 'ARMOR'
   | 'SHIELD'
