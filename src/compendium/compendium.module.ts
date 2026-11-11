@@ -19,6 +19,10 @@ import {
   CompendiumArchetypeSchema,
 } from '../schema/wiki/compendium/compendium-archetype.schema';
 import {
+  CompendiumRace,
+  CompendiumRaceSchema,
+} from '../schema/wiki/compendium/compendium-race.schema';
+import {
   CompendiumItem,
   CompendiumItemSchema,
 } from '../schema/wiki/compendium/compendium-item.schema';
@@ -30,6 +34,7 @@ import {
       { name: CompendiumFeat.name, schema: CompendiumFeatSchema },
       { name: CompendiumStyle.name, schema: CompendiumStyleSchema },
       { name: CompendiumArchetype.name, schema: CompendiumArchetypeSchema },
+      { name: CompendiumRace.name, schema: CompendiumRaceSchema },
       { name: CompendiumItem.name, schema: CompendiumItemSchema },
     ]),
   ],

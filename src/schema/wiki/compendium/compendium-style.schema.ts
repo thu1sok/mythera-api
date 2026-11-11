@@ -22,7 +22,9 @@ export interface StyleInitialTraits {
   hpLevel1: string; // e.g. '12 + tu modificador de Constitución.'
   hpLevel1Base: number; // 12 or 10
   hpHigherLevels: string; // e.g. '1d12 + tu modificador de Constitución por cada nivel posterior al primero.'
-  abilityScoreImprovement: string;
+  // abilityScoreImprovement se ha ido a la raza (compendiumraces -> 'humano').
+  // Estaba repetido en los tres estilos y va atado a ser humano, asi que el
+  // dia que entre otra raza habria que duplicarlo y condicionarlo aqui.
   armorProficiencies: string;
   shieldProficiency: string;
   weaponProficiencies: string;

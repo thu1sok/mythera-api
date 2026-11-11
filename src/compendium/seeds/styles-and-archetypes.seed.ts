@@ -17,8 +17,6 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       hpLevel1Base: 12,
       hpHigherLevels:
         '1d12 + tu modificador de Constitución por cada nivel posterior al primero.',
-      abilityScoreImprovement:
-        'Aumenta una característica de tu elección en +2 y otra característica diferente en +1, hasta un máximo de 20.',
       armorProficiencies: 'Armaduras Ligeras, Medias y Pesadas.',
       shieldProficiency: 'Escudos.',
       weaponProficiencies: 'Armas Simples y Marciales.',
@@ -37,22 +35,6 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       ],
     },
     choices: [
-      {
-        id: 'versatil_stat_plus_2',
-        label: 'Aumenta una característica en +2 (máx. 20)',
-        type: 'ABILITY_SCORE_INCREASE',
-        count: 1,
-        amount: 2,
-        allowedOptions: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
-      },
-      {
-        id: 'versatil_stat_plus_1',
-        label: 'Aumenta otra característica diferente en +1 (máx. 20)',
-        type: 'ABILITY_SCORE_INCREASE',
-        count: 1,
-        amount: 1,
-        allowedOptions: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
-      },
       {
         id: 'versatil_save_group_a',
         label: 'Competencia en Tirada de Salvación (Fuerza, Inteligencia o Carisma)',
@@ -222,8 +204,6 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       hpLevel1Base: 10,
       hpHigherLevels:
         '1d10 + tu modificador de Constitución por cada nivel posterior al primero.',
-      abilityScoreImprovement:
-        'Aumenta una característica de tu elección en +2 y otra característica diferente en +1, hasta un máximo de 20.',
       armorProficiencies: 'Armaduras Ligeras.',
       shieldProficiency: 'Ninguna.',
       weaponProficiencies: 'Armas Simples y armas Marciales con la propiedad Sutileza.',
@@ -239,22 +219,6 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       ],
     },
     choices: [
-      {
-        id: 'agil_stat_plus_2',
-        label: 'Aumenta una característica en +2 (máx. 20)',
-        type: 'ABILITY_SCORE_INCREASE',
-        count: 1,
-        amount: 2,
-        allowedOptions: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
-      },
-      {
-        id: 'agil_stat_plus_1',
-        label: 'Aumenta otra característica diferente en +1 (máx. 20)',
-        type: 'ABILITY_SCORE_INCREASE',
-        count: 1,
-        amount: 1,
-        allowedOptions: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
-      },
       {
         id: 'agil_save_group_a',
         label: 'Competencia en Tirada de Salvación (Fuerza, Inteligencia o Carisma)',
@@ -437,8 +401,6 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       hpLevel1Base: 10,
       hpHigherLevels:
         '1d10 + tu modificador de Constitución por cada nivel posterior al primero.',
-      abilityScoreImprovement:
-        'Aumenta una característica de tu elección en +2 y otra característica diferente en +1, hasta un máximo de 20.',
       armorProficiencies: 'Armaduras Ligeras y Medias.',
       shieldProficiency: 'Escudos.',
       weaponProficiencies: 'Armas Simples.',
@@ -455,22 +417,6 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       ],
     },
     choices: [
-      {
-        id: 'apoyo_stat_plus_2',
-        label: 'Aumenta una característica en +2 (máx. 20)',
-        type: 'ABILITY_SCORE_INCREASE',
-        count: 1,
-        amount: 2,
-        allowedOptions: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
-      },
-      {
-        id: 'apoyo_stat_plus_1',
-        label: 'Aumenta otra característica diferente en +1 (máx. 20)',
-        type: 'ABILITY_SCORE_INCREASE',
-        count: 1,
-        amount: 1,
-        allowedOptions: ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'],
-      },
       {
         id: 'apoyo_save_group_a',
         label: 'Competencia en Tirada de Salvación (Fuerza, Inteligencia o Carisma)',
@@ -706,6 +652,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       ],
       companionStats: [
         {
+          slug: 'animal-terrestre',
           name: 'Animal terrestre',
           examples: 'Perro, lobo, jabalí',
           type: 'Bestia',
@@ -739,6 +686,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'Tras desplazarse al menos 20 pies en línea recta hacia el objetivo, un impacto inflige 1d6 de daño adicional del mismo tipo. Si el objetivo es Grande o inferior, también queda Derribado',
         },
         {
+          slug: 'animal-aereo',
           name: 'Animal aéreo',
           examples: 'Águila, halcón, búho',
           type: 'Bestia',
@@ -1025,6 +973,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       ],
       maneuvers: [
         {
+          slug: 'acecho',
           name: 'Acecho',
           activation:
             'Al realizar una prueba de Destreza (Sigilo) o una tirada de Iniciativa.',
@@ -1032,6 +981,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'Añades el resultado del Dado de Superioridad a la tirada. No puedes utilizar esta maniobra mientras estés Incapacitado.',
         },
         {
+          slug: 'intercambio-de-posiciones',
           name: 'Intercambio de Posiciones',
           activation:
             'Durante tu turno, cuando estés a 5 pies o menos de una criatura voluntaria y no estés Incapacitado.',
@@ -1039,36 +989,42 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'Intercambias tu posición con la criatura, consumiendo 5 pies de tu movimiento sin provocar Ataques de Oportunidad. Elige a una de las dos criaturas: obtiene un bonificador a su Clase de Armadura igual al resultado del Dado de Superioridad hasta el comienzo de tu próximo turno.',
         },
         {
+          slug: 'ataque-del-comandante',
           name: 'Ataque del Comandante',
           activation: 'Al realizar la acción Atacar durante tu turno.',
           effect:
             'Sustituyes uno de tus ataques para ordenar a un aliado que pueda verte u oírte que ataque. El aliado puede utilizar inmediatamente su Reacción para realizar un ataque con un arma. Si impacta, añade el resultado del Dado de Superioridad al daño.',
         },
         {
+          slug: 'presencia-imponente',
           name: 'Presencia Imponente',
           activation:
             'Al realizar una prueba de Carisma (Intimidación, Interpretación o Persuasión).',
           effect: 'Añades el resultado del Dado de Superioridad a la prueba.',
         },
         {
+          slug: 'ataque-desarmante',
           name: 'Ataque Desarmante',
           activation: 'Al impactar a una criatura con un ataque.',
           effect:
             'Añades el resultado del Dado de Superioridad al daño. El objetivo debe superar una Tirada de Salvación de Fuerza o soltar un objeto que sostenga, a tu elección. El objeto cae en su espacio.',
         },
         {
+          slug: 'ataque-distractor',
           name: 'Ataque Distractor',
           activation: 'Al impactar a una criatura con un ataque.',
           effect:
             'Añades el resultado del Dado de Superioridad al daño. El siguiente ataque realizado por una criatura distinta de ti contra ese objetivo tiene Ventaja, siempre que se produzca antes del comienzo de tu próximo turno.',
         },
         {
+          slug: 'juego-de-pies-evasivo',
           name: 'Juego de Pies Evasivo',
           activation: 'Como Acción Adicional.',
           effect:
             'Realizas la acción Destrabarse y añades el resultado del Dado de Superioridad a tu Clase de Armadura hasta el comienzo de tu próximo turno.',
         },
         {
+          slug: 'finta',
           name: 'Finta',
           activation:
             'Como Acción Adicional, contra una criatura situada a 5 pies o menos de ti.',
@@ -1076,24 +1032,28 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'Obtienes Ventaja en tu siguiente tirada de ataque contra esa criatura durante el turno actual. Si impactas, añades el resultado del Dado de Superioridad al daño.',
         },
         {
+          slug: 'provocacion',
           name: 'Provocación',
           activation: 'Al impactar a una criatura con un ataque.',
           effect:
             'Añades el resultado del Dado de Superioridad al daño. El objetivo debe superar una Tirada de Salvación de Sabiduría o tendrá Desventaja en las tiradas de ataque contra cualquier criatura que no seas tú hasta el final de tu próximo turno.',
         },
         {
+          slug: 'embestida',
           name: 'Embestida',
           activation: 'Como Acción Adicional.',
           effect:
             'Realizas la acción Correr. Si durante ese turno te desplazas al menos 5 pies en línea recta hacia una criatura y posteriormente la impactas con un ataque cuerpo a cuerpo como parte de la acción Atacar, añades el resultado del Dado de Superioridad al daño.',
         },
         {
+          slug: 'ataque-de-maniobra',
           name: 'Ataque de Maniobra',
           activation: 'Al impactar a una criatura con un ataque.',
           effect:
             'Añades el resultado del Dado de Superioridad al daño. Un aliado que pueda verte u oírte puede utilizar inmediatamente su Reacción para desplazarse hasta la mitad de su Velocidad sin provocar Ataques de Oportunidad de la criatura impactada.',
         },
         {
+          slug: 'parada',
           name: 'Parada',
           activation:
             'Como Reacción, cuando una criatura te inflige daño con un ataque cuerpo a cuerpo.',
@@ -1101,18 +1061,21 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'Reduces el daño recibido en una cantidad igual al resultado del Dado de Superioridad + tu modificador de Fuerza o Destreza, a tu elección.',
         },
         {
+          slug: 'ataque-preciso',
           name: 'Ataque Preciso',
           activation: 'Al fallar una tirada de ataque.',
           effect:
             'Añades el resultado del Dado de Superioridad a la tirada de ataque, pudiendo convertir el fallo en un impacto.',
         },
         {
+          slug: 'ataque-de-empuje',
           name: 'Ataque de Empuje',
           activation: 'Al impactar a una criatura con un ataque.',
           effect:
             'Añades el resultado del Dado de Superioridad al daño. Si el objetivo es Grande o inferior, debe superar una Tirada de Salvación de Fuerza o ser empujado hasta 15 pies en dirección opuesta a ti.',
         },
         {
+          slug: 'aliento',
           name: 'Aliento',
           activation:
             'Como Acción Adicional, eligiendo a un aliado situado a 30 pies o menos que pueda verte u oírte.',
@@ -1120,6 +1083,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'El aliado obtiene Puntos de Golpe Temporales iguales al resultado del Dado de Superioridad + la mitad de tu nivel de personaje, redondeada hacia abajo.',
         },
         {
+          slug: 'contraataque',
           name: 'Contraataque',
           activation:
             'Como Reacción, cuando una criatura falla un ataque cuerpo a cuerpo contra ti.',
@@ -1127,6 +1091,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             'Realizas un ataque cuerpo a cuerpo contra esa criatura. Si impactas, añades el resultado del Dado de Superioridad al daño.',
         },
         {
+          slug: 'ataque-de-barrido',
           name: 'Ataque de Barrido',
           activation: 'Al impactar a una criatura con un ataque cuerpo a cuerpo.',
           effect:
@@ -1192,6 +1157,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 3,
         title: 'Conocimientos generales',
+        grants: { halfProficiencyOnUntrainedSkills: true },
         description:
           'Cuando realices una Prueba de Característica que utilice una habilidad en la que no tengas competencia, puedes añadir a la tirada la mitad de tu Bonificador de Competencia, redondeando hacia abajo.',
       },

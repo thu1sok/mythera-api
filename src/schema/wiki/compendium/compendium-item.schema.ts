@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type CompendiumItemDocument = CompendiumItem & Document;
 
-export type CompendiumItemCategory =
+export type ItemCategory =
   | 'WEAPON'
   | 'ARMOR'
   | 'SHIELD'
@@ -13,6 +13,17 @@ export type CompendiumItemCategory =
   | 'TOOL'
   | 'INSTRUMENT';
 
+export type CompendiumItemCategory = ItemCategory;
+
+/**
+ * El equipo que se compra: armas, armaduras, munición, paquetes, útiles,
+ * herramientas e instrumentos.
+ *
+ * Es la fuente única de los artículos concretos. El catálogo
+ * (COMPENDIUM_CATALOGS) se queda solo con los grupos de competencia
+ * ('armas_simples', 'herramientas_artesano') y las listas fijas
+ * (características, habilidades, tipos de daño, maestrías).
+ */
 @Schema({ timestamps: true })
 export class CompendiumItem {
   @Prop({ required: true, unique: true })
@@ -34,37 +45,46 @@ export class CompendiumItem {
       'INSTRUMENT',
     ],
   })
-  category: CompendiumItemCategory;
+  category: ItemCategory;
 
   @Prop({ default: false })
   isDefault: boolean;
 
+  /** Tal y como se muestra: '15 PO', '2 po', '5 PP', '1 PC'. */
   @Prop({ default: '—' })
   cost: string;
 
+  /** Precio en cobre, para ordenar y filtrar. -1 si varía. 1 PO = 100 PC. */
   @Prop({ default: 0 })
   costInCopper: number;
 
+  /** En kilos. */
   @Prop({ default: '—' })
   weight: string;
 
   // ==========================================
-  // WEAPONS PROPERTIES (For character sheet & attack rolls)
+  // ARMAS (Propiedades para hoja de personaje y tiradas)
   // ==========================================
+  /** Grupo de competencia: 'armas_simples' o 'armas_marciales'. */
   @Prop({ enum: ['armas_simples', 'armas_marciales'] })
   group?: string;
 
   @Prop({ default: false })
   melee?: boolean;
 
+  /** Tiene la propiedad Sutileza / Sutil: permite usar Fuerza o Destreza. */
   @Prop({ default: false })
   finesse?: boolean;
+
+  /** Arma de fuego. */
+  @Prop({ default: false })
+  requiresGunpowder?: boolean;
 
   @Prop()
   damage?: string; // e.g. "1d4", "1d6", "1d8", "2d6", "1d10", "1d12"
 
   @Prop()
-  damageDice?: number; // e.g. 1 or 2
+  damageDice?: number; // e.g. 1 o 2
 
   @Prop()
   damageDie?: number; // e.g. 4, 6, 8, 10, 12
@@ -78,8 +98,9 @@ export class CompendiumItem {
   @Prop({ type: [String], default: [] })
   properties?: string[];
 
+  /** Clave de COMPENDIUM_CATALOGS.masteries: 'acoso', 'ataque-rapido', 'derribo', etc. */
   @Prop()
-  mastery?: string; // e.g. "acoso", "ataque-rapido", "derribo", "desequilibrar", "empuje", "frenar", "hendedura", "refilon"
+  mastery?: string;
 
   @Prop()
   masteryName?: string;
@@ -121,51 +142,58 @@ export class CompendiumItem {
   special?: string;
 
   // ==========================================
-  // ARMOR & SHIELDS
+  // ARMADURAS Y ESCUDO
   // ==========================================
+  /** 'Ligera' | 'Media' | 'Pesada' | 'Escudo'. */
   @Prop({ enum: ['Ligera', 'Media', 'Pesada', 'Escudo'] })
   armorType?: string;
 
+  /** La cadena que se enseña: '11 + DES', '14 + mod. Destreza (máx. 2)', '18', '+2'. */
   @Prop()
-  armorClass?: string; // Display text: e.g. "11 + DES", "13 + DES (máx. +2)", "18", "+2"
+  armorClass?: string;
 
+  /** Base numérica de CA (o +2 en el escudo). */
   @Prop()
-  baseArmorClass?: number; // Base numeric AC: 11, 12, 13, 14, 15, 16, 17, 18, 2
+  baseArmorClass?: number;
 
+  /** Tope del modificador de Destreza (2 en Medias). */
   @Prop()
-  maxDexBonus?: number; // 2 for Medias, undefined for Ligeras, 0 for Pesadas
+  maxDexBonus?: number;
 
+  /** La armadura ignora la Destreza en ambos sentidos (Pesadas). */
   @Prop({ default: false })
-  ignoresDex?: boolean; // true for Pesadas
+  ignoresDex?: boolean;
 
   @Prop()
   strengthRequirement?: string; // e.g. "Fue 13", "Fue 15"
 
   @Prop()
-  minStrength?: number; // 13, 15
+  minStrength?: number;
 
   @Prop({ default: false })
   stealthDisadvantage?: boolean;
 
   // ==========================================
-  // TOOLS, INSTRUMENTS, GEAR & PACKS
+  // HERRAMIENTAS, INSTRUMENTOS, ÚTILES Y PAQUETES
   // ==========================================
+  /** Grupo de COMPENDIUM_CATALOGS.tools al que corresponde. */
   @Prop()
   toolGroup?: string;
 
   @Prop({ default: 10 })
   maxUses?: number;
 
+  // Munición
   @Prop()
-  amount?: number; // Ammo quantity, e.g. 20
+  amount?: number;
 
   @Prop()
   storedIn?: string;
 
+  // Paquetes
   @Prop()
   contents?: string;
 }
 
 export const CompendiumItemSchema =
   SchemaFactory.createForClass(CompendiumItem);
-

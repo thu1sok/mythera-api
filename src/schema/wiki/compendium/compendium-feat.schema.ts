@@ -8,7 +8,13 @@ import {
 } from './compendium-mechanics.types';
 
 export type CompendiumFeatDocument = CompendiumFeat & Document;
-export type FeatCategory = 'ORIGIN' | 'GENERAL';
+
+// COMBAT_TECHNIQUE es la tercera categoria: las Tecnicas de Combate viven en
+// esta misma coleccion, igual que ORIGIN y GENERAL, y se piden con
+// /compendium/feats?category=COMBAT_TECHNIQUE. Sin esto, mongoimport las
+// escribe igual (se salta Mongoose) pero cualquier edicion desde la wiki
+// las rechaza por validacion.
+export type FeatCategory = 'ORIGIN' | 'GENERAL' | 'COMBAT_TECHNIQUE';
 
 @Schema({ timestamps: true })
 export class CompendiumFeat {
@@ -18,7 +24,7 @@ export class CompendiumFeat {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, enum: ['ORIGIN', 'GENERAL'] })
+  @Prop({ required: true, enum: ['ORIGIN', 'GENERAL', 'COMBAT_TECHNIQUE'] })
   category: FeatCategory;
 
   @Prop({ default: '' })

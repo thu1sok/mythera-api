@@ -10,10 +10,11 @@ import {
 } from '@nestjs/common';
 import { CompendiumService } from './compendium.service';
 import { FeatCategory } from '../schema/wiki/compendium/compendium-feat.schema';
+import { ItemCategory } from '../schema/wiki/compendium/compendium-item.schema';
 
 @Controller('compendium')
 export class CompendiumController {
-  constructor(private readonly compendiumService: CompendiumService) { }
+  constructor(private readonly compendiumService: CompendiumService) {}
 
   // ==========================================
   // METADATA & CHARACTER CREATOR EXPORT
@@ -53,7 +54,7 @@ export class CompendiumController {
   }
 
   // ==========================================
-  // 2. DOTES (ORIGIN & GENERAL)
+  // 2. DOTES (ORIGIN, GENERAL & COMBAT_TECHNIQUE)
   // ==========================================
   @Get('feats')
   async findAllFeats(@Query('category') category?: FeatCategory) {
@@ -125,15 +126,55 @@ export class CompendiumController {
   }
 
   // ==========================================
-  // 5. OBJETOS, ARMAS Y EQUIPO
+  // 5. RAZAS
+  // ==========================================
+  @Get('races')
+  async findAllRaces() {
+    return this.compendiumService.findAllRaces();
+  }
+
+  @Post('races')
+  async createRace(@Body() body: any) {
+    return this.compendiumService.createRace(body);
+  }
+
+  @Patch('races/:id')
+  async updateRace(@Param('id') id: string, @Body() body: any) {
+    return this.compendiumService.updateRace(id, body);
+  }
+
+  @Delete('races/:id')
+  async deleteRace(@Param('id') id: string) {
+    await this.compendiumService.deleteRace(id);
+    return { message: 'Raza eliminada correctamente' };
+  }
+
+  // ==========================================
+  // 6. OBJETOS, ARMAS Y EQUIPO
   // ==========================================
   @Get('items')
-  async findAllItems(@Query('category') category?: string) {
+  async findAllItems(@Query('category') category?: ItemCategory) {
     return this.compendiumService.findAllItems(category);
   }
 
   @Get('items/:slug')
   async findItemBySlug(@Param('slug') slug: string) {
     return this.compendiumService.findItemBySlug(slug);
+  }
+
+  @Post('items')
+  async createItem(@Body() body: any) {
+    return this.compendiumService.createItem(body);
+  }
+
+  @Patch('items/:id')
+  async updateItem(@Param('id') id: string, @Body() body: any) {
+    return this.compendiumService.updateItem(id, body);
+  }
+
+  @Delete('items/:id')
+  async deleteItem(@Param('id') id: string) {
+    await this.compendiumService.deleteItem(id);
+    return { message: 'Objeto eliminado correctamente' };
   }
 }

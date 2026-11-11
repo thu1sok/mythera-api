@@ -17,6 +17,10 @@ export interface ArchetypeLevelFeature {
 }
 
 export interface CompanionStatBlock {
+  // Mismo motivo que las maniobras: ANIMAL_COMPANION es una eleccion, y lo
+  // elegido hay que poder referenciarlo desde la ficha sin depender del
+  // nombre.
+  slug: string;
   name: string; // 'Animal terrestre' | 'Animal aéreo'
   examples: string;
   type: string;
@@ -47,6 +51,10 @@ export interface CompanionStatBlock {
 }
 
 export interface CombatManeuverOption {
+  // Las maniobras se eligen con COMBAT_MANEUVER y hay que poder referenciarlas
+  // desde la ficha de un personaje. Sin slug, lo unico que se puede guardar es
+  // el nombre, y al corregir una tilde la ficha apunta a nada.
+  slug: string;
   name: string;
   activation: string;
   effect: string;

@@ -19,6 +19,7 @@ import { RegionsModule } from './regions/regions.module';
 import { CompendiumModule } from './compendium/compendium.module';
 import { DurmientePlacesModule } from './durmiente-places/durmiente-places.module';
 import { DurmienteRegionsModule } from './durmiente-regions/durmiente-regions.module';
+import { CharacterSheetsModule } from './character-sheets/character-sheets.module';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 
@@ -55,6 +56,7 @@ dotenv.config();
     DurmienteRegionsModule,
     WikiHomeModule,
     CompendiumModule,
+    CharacterSheetsModule,
   ],
   exports: [],
   controllers: [],

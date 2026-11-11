@@ -19,7 +19,7 @@ export const DEFAULT_HUMAN_TRAITS: Partial<HumanTrait>[] = [
       {
         id: 'habilidoso_proficiency_choice',
         label: 'Elige una habilidad o herramienta en la que obtener competencia',
-        type: 'SKILL_PROFICIENCY',
+        type: 'SKILL_OR_TOOL_PROFICIENCY',
         count: 1,
         allowedOptions: ['ANY'],
         notes: 'Puede ser cualquier habilidad o herramienta del catálogo.',
