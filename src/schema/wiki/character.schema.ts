@@ -4,6 +4,9 @@ import * as mongoose from 'mongoose';
 
 export type CharacterDocument = Character & Document;
 
+/** Los dos valores que ofrece el creador. */
+export type Gender = 'el' | 'ella';
+
 @Schema()
 export class Character {
     @Prop({ required: true })
@@ -17,6 +20,14 @@ export class Character {
 
     @Prop()
     imageUrl: string;
+
+    /** Texto libre, como en el creador ('12', 'unos cuarenta'...). */
+    @Prop({ default: '' })
+    age: string;
+
+    /** Sin valor por defecto: un personaje viejo no tiene genero decidido. */
+    @Prop({ enum: ['el', 'ella'] })
+    gender?: Gender;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Subrace' })
     subraceId: Types.ObjectId;

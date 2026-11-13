@@ -3,15 +3,8 @@ import { Document } from 'mongoose';
 
 export type CompendiumItemDocument = CompendiumItem & Document;
 
-export type ItemCategory =
-  | 'WEAPON'
-  | 'ARMOR'
-  | 'SHIELD'
-  | 'AMMUNITION'
-  | 'GEAR'
-  | 'PACK'
-  | 'TOOL'
-  | 'INSTRUMENT';
+/** Las del documento EQUIPO Y TESOROS. Las Herramientas y Materiales van en TOOL. */
+export type ItemCategory = 'WEAPON' | 'ARMOR' | 'SHIELD' | 'AMMUNITION' | 'TOOL';
 
 /**
  * El equipo que se compra: armas, armaduras, municion, paquetes, utiles,
@@ -37,16 +30,7 @@ export class CompendiumItem {
 
   @Prop({
     required: true,
-    enum: [
-      'WEAPON',
-      'ARMOR',
-      'SHIELD',
-      'AMMUNITION',
-      'GEAR',
-      'PACK',
-      'TOOL',
-      'INSTRUMENT',
-    ],
+    enum: ['WEAPON', 'ARMOR', 'SHIELD', 'AMMUNITION', 'TOOL'],
   })
   category: ItemCategory;
 
@@ -76,7 +60,7 @@ export class CompendiumItem {
   @Prop({ type: Array, default: undefined })
   properties?: string[];
 
-  /** Clave de COMPENDIUM_CATALOGS.masteries: 'hendidura', 'roce', ... */
+  /** Clave de COMPENDIUM_CATALOGS.masteries: 'hendedura', 'refilon', ... */
   @Prop({ required: false })
   mastery?: string;
 
@@ -91,9 +75,22 @@ export class CompendiumItem {
   @Prop({ required: false })
   finesse?: boolean;
 
-  /** Arma de fuego. Marcada por si alguna mesa no las quiere. */
+  /** El dado de dano a dos manos, de la propiedad Versatil. */
   @Prop({ required: false })
-  requiresGunpowder?: boolean;
+  versatileDamage?: string;
+
+  // --- propiedades, como campos, para no tener que leer el texto ----------
+  @Prop({ required: false }) light?: boolean;        // Ligera
+  @Prop({ required: false }) heavy?: boolean;        // Pesada
+  @Prop({ required: false }) reach?: boolean;        // Alcance
+  @Prop({ required: false }) thrown?: boolean;       // Arrojadiza
+  @Prop({ required: false }) ammunition?: boolean;   // Municion
+  @Prop({ required: false }) loading?: boolean;      // Recarga
+  @Prop({ required: false }) twoHanded?: boolean;    // A Dos Manos
+
+  /** Alcance normal y maximo, en pies. */
+  @Prop({ required: false }) rangeNormal?: number;
+  @Prop({ required: false }) rangeMax?: number;
 
   // --- armaduras y escudo --------------------------------------------------
   /** La cadena que se ensena: '14 + mod. Destreza (max. 2)', '18', '+2'. */
@@ -156,6 +153,13 @@ export class CompendiumItem {
    */
   @Prop({ required: false })
   toolGroup?: string;
+
+  /** Usos maximos. Las Herramientas y Materiales traen 10. */
+  @Prop({ required: false }) maxUses?: number;
+
+  // --- comun ---------------------------------------------------------------
+  /** Texto libre que se muestra en la tienda y en la ficha. */
+  @Prop({ required: false }) notes?: string;
 }
 
 export const CompendiumItemSchema = SchemaFactory.createForClass(CompendiumItem);

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsArray, IsOptional, IsMongoId } from 'class-validator';
+import { IsIn, IsString, IsNotEmpty, IsArray, IsOptional, IsMongoId } from 'class-validator';
 
 export class CreateCharacterDto {
     @IsString()
@@ -8,6 +8,14 @@ export class CreateCharacterDto {
     @IsString()
     @IsNotEmpty()
     playerName: string;
+
+    @IsString()
+    @IsOptional()
+    age?: string;
+
+    @IsIn(['el', 'ella'])
+    @IsOptional()
+    gender?: 'el' | 'ella';
 
     @IsMongoId()
     @IsOptional()

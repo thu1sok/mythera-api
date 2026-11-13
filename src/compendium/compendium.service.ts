@@ -43,7 +43,7 @@ import {
 import { DEFAULT_GENERAL_FEATS } from './seeds/general-feats.seed';
 import { DEFAULT_COMBAT_TECHNIQUES } from './seeds/combat-techniques.seed';
 import { DEFAULT_RACES } from './seeds/races.seed';
-import { DEFAULT_ITEMS } from './seeds/items.seed';
+import { ITEMS_SEED } from './seeds/items.seed';
 
 @Injectable()
 export class CompendiumService implements OnModuleInit {
@@ -140,13 +140,21 @@ export class CompendiumService implements OnModuleInit {
       }
 
       // 8. Seed Items
-      for (const item of DEFAULT_ITEMS) {
+      // weight y requiresGunpowder ya no se usan (el documento EQUIPO Y
+      // TESOROS no da pesos y no hay armas de fuego). $set no los quita de
+      // los documentos que ya existian, asi que se nombran aqui. Si mañana se
+      // va otro campo, se añade a esta lista.
+      for (const item of ITEMS_SEED) {
         await this.itemModel.updateOne(
           { slug: item.slug },
-          { $set: { ...item, isDefault: true } },
+          {
+            $set: { ...item, isDefault: true },
+            $unset: { weight: '', requiresGunpowder: '' },
+          },
           { upsert: true },
         );
       }
+      await this.pruneDefaultItems();
 
       this.logger.log(
         'Compendio Durmiente: Datos por defecto sincronizados correctamente.',
@@ -155,6 +163,38 @@ export class CompendiumService implements OnModuleInit {
       this.logger.error(
         'Error al sincronizar los datos por defecto del Compendio Durmiente',
         error,
+      );
+    }
+  }
+
+  /**
+   * Borra los objetos por defecto que ya no estan en el seed. Sin esto, una
+   * base sembrada con un seed anterior se queda con los objetos viejos
+   * mezclados con los nuevos.
+   *
+   * Los que no son isDefault no se tocan nunca: los ha creado alguien desde
+   * la wiki.
+   *
+   * Red de seguridad: si el seed trae muy pocos objetos, lo normal es que se
+   * haya roto un import y no que el compendio se haya quedado en eso. En ese
+   * caso no se borra nada y se avisa.
+   */
+  private async pruneDefaultItems() {
+    const MIN_SEED_ITEMS = 20;
+    if (ITEMS_SEED.length < MIN_SEED_ITEMS) {
+      this.logger.warn(
+        `Poda de objetos omitida: el seed trae ${ITEMS_SEED.length} objetos (minimo ${MIN_SEED_ITEMS}). ¿Se ha roto el import de items.seed?`,
+      );
+      return;
+    }
+    const slugs = ITEMS_SEED.map((i) => i.slug);
+    const result = await this.itemModel.deleteMany({
+      isDefault: true,
+      slug: { $nin: slugs },
+    });
+    if (result.deletedCount > 0) {
+      this.logger.log(
+        `Poda de objetos: ${result.deletedCount} objetos por defecto que ya no estan en el seed.`,
       );
     }
   }

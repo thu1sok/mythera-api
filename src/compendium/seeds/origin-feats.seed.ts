@@ -304,8 +304,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
     features: [
       {
         title: 'Competencia con Instrumentos',
-        description:
-          'Obtienes competencia con un Instrumento Musical de tu elección.',
+        description: 'Obtienes competencia con Instrumentos Musicales.',
       },
       {
         title: 'Canción Reconfortante',
@@ -313,16 +312,12 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
           'Al finalizar un Descanso Corto o Largo, puedes tocar una canción con un Instrumento Musical con el que tengas competencia y otorgar Inspiración Heroica a un número de aliados que puedan oírte igual a tu Bonificador de Carisma.',
       },
     ],
-    grants: {},
-    choices: [
-      {
-        id: 'musico_instrument_choice',
-        label: 'Elige un Instrumento Musical',
-        type: 'INSTRUMENT_PROFICIENCY',
-        count: 1,
-        allowedOptions: ['ANY'],
-      },
-    ],
+    // Los instrumentos son una sola familia (documento EQUIPO Y TESOROS): no
+    // hay nada entre lo que elegir, así que la competencia es fija.
+    grants: {
+      fixedProficiencies: [{ category: 'TOOL', value: 'instrumento_musical' }],
+    },
+    choices: [],
   },
   {
     slug: 'letrado',

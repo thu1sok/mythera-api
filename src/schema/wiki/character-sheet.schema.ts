@@ -1,19 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 export type CharacterSheetDocument = CharacterSheet & Document;
 
 /**
- * La ficha de un personaje jugable.
+ * La parte mecanica de un personaje jugable.
  *
- * NO es la coleccion 'characters', que son los personajes de la wiki (lore
- * para el mapa: characterName, playerName, subraceId, factionId). Aquella es
- * narrativa; esta es mecanica, y la produce el creador.
+ * El personaje es el documento de 'characters' (BRIEFING-JUGADORES §2): ahi
+ * vive todo lo que un personaje tiene SIN ficha (nombre, retrato, edad,
+ * genero, lugar, organizacion, deidades, trasfondo, eventos, objetos de la
+ * trama). Esta coleccion guarda SOLO mecanica, y nace cuando alguien empieza
+ * el creador para ese personaje. Por eso no hay aqui nombre ni retrato: si
+ * estuvieran en los dos sitios, uno se quedaria viejo.
  *
- * Esta partida en bloques a proposito:
+ * Bloques:
  *
- *   identidad  lo que el jugador escribe al empezar
  *   build      lo que produce el creador. Solo cambia al subir de nivel.
+ *              Mientras el creador esta a medias puede faltar, o faltarle
+ *              campos: 'completed' dice si esta terminado.
  *   state      lo que cambia en mesa cada diez minutos.
  *   equipment  lo que lleva encima.
  *   overrides  lo unico que pisa un valor calculado (el master te quita el +2
@@ -23,12 +28,7 @@ export type CharacterSheetDocument = CharacterSheet & Document;
  * Velocidad, Iniciativa y Puntos de Golpe maximos. Se calculan a partir de
  * build + los grants del compendio + equipment. Si se guardaran, el dia que
  * se corrija un grants todas las fichas quedarian desfasadas.
- *
- * El creador hace un POST al terminar. La ficha de mesa hara PATCH sobre
- * state, equipment y notes; build solo cambia al subir de nivel.
  */
-
-export type Gender = 'el' | 'ella';
 
 /**
  * Lo que se GUARDA por competencia. 'media' no esta aqui a proposito: el
@@ -82,8 +82,23 @@ export interface CharacterBuild {
    * guardan todas, aunque solo se use una, para que el master vea que salio.
    */
   rolledRounds: number[][];
-  /** Indice de la tanda elegida. -1 si las puntuaciones se metieron a mano. */
+  /**
+   * Los dados de cada tanda: los cuatro que salieron y cual se descarto, en
+   * el mismo orden que rolledRounds. Las tiradas son hechos: se guardan en el
+   * momento de tirar, no al terminar (si no, salir y volver a entrar daria
+   * otra tirada y el limite de tandas no existiria).
+   */
+  rolledDice?: { dice: number[]; droppedIndex: number }[][];
+  /** Indice de la tanda elegida. -1 si no hay o si se metieron a mano. */
   chosenRound: number;
+  /**
+   * Que valor de la tanda elegida va a cada caracteristica: indice dentro de
+   * la tanda, por clave (STR, DEX...). Sin esto el paso 2 no se puede
+   * reconstruir al volver: abilityScores ya lleva la Mejora sumada.
+   */
+  abilityAssignment?: Record<string, number | null>;
+  /** Las puntuaciones metidas a mano, antes de la Mejora. Solo en ese modo. */
+  manualScores?: Record<string, number | null>;
   /** Los valores finales, ya con la Mejora de Caracteristica aplicada. */
   abilityScores: AbilityScores;
   /**
@@ -142,6 +157,13 @@ export interface EquippedItem {
   /** Para objetos que no estan en el compendio. */
   customName?: string;
   notes?: string;
+  /**
+   * Usos que quedan, solo en los objetos con maxUses (Herramientas y
+   * Materiales). El tope es maxUses x quantity: comprar otro sube la cantidad
+   * y el tope. Ausente = lleno. Simplifica el documento (10 usos POR unidad):
+   * ver mythera-map-app/src/app/core/rules/item-uses.ts.
+   */
+  usesLeft?: number;
 }
 
 export interface Currency {
@@ -152,34 +174,31 @@ export interface Currency {
 
 @Schema({ timestamps: true })
 export class CharacterSheet {
-  // --- identidad -----------------------------------------------------------
+  // --- a quien pertenece ---------------------------------------------------
   /**
-   * El jugador duenyo de la ficha, de la coleccion 'players'.
-   * NO es unico: un jugador puede tener tantos personajes como quiera.
-   * El indice esta para buscar sus fichas, no para restringir.
+   * El personaje de 'characters' del que esta ficha es la mecanica. Una
+   * ficha siempre pertenece a un personaje; un personaje puede no tener
+   * ficha, y tiene como mucho una (indice unico).
+   *
+   * No hay playerId: el jugador es el del personaje. Guardarlo aqui tambien
+   * haria que se quedara viejo el dia que el personaje cambie de jugador.
    */
-  @Prop({ required: true, index: true })
-  playerId: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Character',
+    required: true,
+    unique: true,
+  })
+  characterId: Types.ObjectId;
 
-  @Prop({ required: true })
-  name: string;
-
-  @Prop({ default: '' })
-  age: string;
-
-  @Prop({ enum: ['el', 'ella'], default: 'el' })
-  gender: Gender;
-
-  /** URL de Cloudinary, igual que el resto de imagenes. */
-  @Prop({ default: '' })
-  portraitUrl: string;
-
-  @Prop({ default: '' })
-  description: string;
+  /** false mientras el creador esta a medias. Las fichas solo se abren con true. */
+  @Prop({ default: false })
+  completed: boolean;
 
   // --- build ---------------------------------------------------------------
-  @Prop({ type: Object, required: true })
-  build: CharacterBuild;
+  /** Opcional y parcial mientras completed sea false. */
+  @Prop({ type: Object })
+  build?: Partial<CharacterBuild>;
 
   // --- lo que cambia en mesa -----------------------------------------------
   @Prop({ type: Object, default: {} })

@@ -6,12 +6,14 @@ import {
   CharacterSheet,
   CharacterSheetSchema,
 } from '../schema/wiki/character-sheet.schema';
+import { Character, CharacterSchema } from '../schema/wiki/character.schema';
 import { SharedModule } from '../shared/shared.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: CharacterSheet.name, schema: CharacterSheetSchema },
+      { name: Character.name, schema: CharacterSchema },
     ]),
     SharedModule,
   ],
