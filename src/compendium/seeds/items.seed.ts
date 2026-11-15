@@ -153,6 +153,7 @@ const ARMAS_SIMPLES_CC: Semilla[] = [
 const ARMAS_SIMPLES_DIST: Semilla[] = [
   {
     slug: 'arco-corto',
+    ammoSlug: 'flechas',
     name: 'Arco corto',
     damage: '1d6',
     damageType: 'perforante',
@@ -166,6 +167,7 @@ const ARMAS_SIMPLES_DIST: Semilla[] = [
   },
   {
     slug: 'ballesta-ligera',
+    ammoSlug: 'virotes-de-ballesta',
     name: 'Ballesta ligera',
     damage: '1d8',
     damageType: 'perforante',
@@ -193,6 +195,7 @@ const ARMAS_SIMPLES_DIST: Semilla[] = [
   },
   {
     slug: 'honda',
+    ammoSlug: 'balas-de-honda',
     name: 'Honda',
     damage: '1d4',
     damageType: 'contundente',
@@ -398,6 +401,7 @@ const ARMAS_MARCIALES_CC: Semilla[] = [
 const ARMAS_MARCIALES_DIST: Semilla[] = [
   {
     slug: 'arco-largo',
+    ammoSlug: 'flechas',
     name: 'Arco largo',
     damage: '1d8',
     damageType: 'perforante',
@@ -412,6 +416,7 @@ const ARMAS_MARCIALES_DIST: Semilla[] = [
   },
   {
     slug: 'ballesta-de-mano',
+    ammoSlug: 'virotes-de-ballesta',
     name: 'Ballesta de mano',
     damage: '1d6',
     damageType: 'perforante',
@@ -426,6 +431,7 @@ const ARMAS_MARCIALES_DIST: Semilla[] = [
   },
   {
     slug: 'ballesta-pesada',
+    ammoSlug: 'virotes-de-ballesta',
     name: 'Ballesta pesada',
     damage: '1d10',
     damageType: 'perforante',
