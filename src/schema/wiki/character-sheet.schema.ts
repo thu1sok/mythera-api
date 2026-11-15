@@ -147,6 +147,25 @@ export interface CharacterState {
   conditions: string[];
   exhaustion: number;
   deathSaves: DeathSaves;
+  /**
+   * A 0 PG, Inconsciente, pero ya no tira salvaciones contra muerte. Al
+   * recuperar 1 PG deja de estarlo.
+   */
+  stable: boolean;
+  /**
+   * Caídas: cada vez que se recupera la consciencia tras estar a 0 PG. Cada
+   * tres, una Secuela, y se descuentan al anotarla. Puede pasar de 3 si se
+   * cae otra vez antes de anotar la secuela: no se pierde ninguna.
+   */
+  falls: number;
+  /** Secuelas permanentes, en texto libre: las decide el máster. */
+  sequelae: string[];
+  /**
+   * Atender Heridas recibidas desde el último descanso. El límite es el
+   * Bonificador de Competencia de quien recibe el tratamiento (esta ficha),
+   * no el de quien lo aplica; los dos descansos lo devuelven entero.
+   */
+  treatmentsUsed: number;
 }
 
 export interface EquippedItem {
@@ -164,6 +183,20 @@ export interface EquippedItem {
    * ver mythera-map-app/src/app/core/rules/item-uses.ts.
    */
   usesLeft?: number;
+  /**
+   * Deterioro: puntos de desgaste de esta pieza (armas, armaduras y escudo).
+   * Ausente = sin desgaste. Ver core/rules/equipment.ts del front.
+   */
+  wear?: number;
+  /** Versátil: empuñada a dos manos (cambia el dado). Ausente = a una mano. Se recuerda por arma. */
+  versatileTwoHands?: boolean;
+  /** Sutil: la característica elegida para atacar. Ausente = la mejor de FUE y DES. */
+  finesseAbility?: 'STR' | 'DEX';
+  /**
+   * Munición: cuántas se han gastado desde la última recuperación. Hace falta
+   * para devolver la mitad tras el combate; ausente = ninguna.
+   */
+  ammoSpent?: number;
 }
 
 export interface Currency {

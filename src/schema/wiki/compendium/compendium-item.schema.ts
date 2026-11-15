@@ -92,6 +92,12 @@ export class CompendiumItem {
   @Prop({ required: false }) rangeNormal?: number;
   @Prop({ required: false }) rangeMax?: number;
 
+  /**
+   * Armas con la propiedad Munición: el slug de la munición que gastan
+   * (arco → flechas). Sin esto la ficha solo podría deducirlo del nombre.
+   */
+  @Prop({ required: false }) ammoSlug?: string;
+
   // --- armaduras y escudo --------------------------------------------------
   /** La cadena que se ensena: '14 + mod. Destreza (max. 2)', '18', '+2'. */
   @Prop({ required: false })

@@ -66,6 +66,12 @@ export interface CompendiumDirectGrants {
   hpPerLevelBonus?: number; // e.g., +1 (Robusto) or +2 (Duro)
   initiativeProficiency?: boolean; // e.g., Alerta
   initiativeAdvantage?: boolean; // e.g., Asesino / Hombre de Armas / Salvaje
+  // Desafía a la muerte (Hombre de Armas, nivel 10): Ventaja en las Tiradas de
+  // Salvación contra Muerte; desde este número (18) cuentan como un 20; y el
+  // daño a 0 PG, también con Rematar, suma un fallo en vez de matar.
+  deathSaveAdvantage?: boolean;
+  deathSaveRecoveryFrom?: number;
+  damageAtZeroIsFailure?: boolean;
   heroicInspirationOnLongRest?: boolean; // e.g., Ingenioso
   /**
    * Media competencia en las habilidades en las que NO tengas competencia
@@ -89,9 +95,58 @@ export interface CompendiumDirectGrants {
   languages?: string[]; // ['Común']
 }
 
+/** Un valor que cambia con el nivel del personaje: vale la fila más alta ya alcanzada. */
+export interface LevelValue<T> {
+  level: number;
+  value: T;
+}
+
+/** Lo que recupera un recurso al terminar un descanso: nada, un uso o todos. */
+export type RestRecovery = 'none' | 'one' | 'all';
+
+/**
+ * Cuántos usos tiene un rasgo. Lo que dice su texto:
+ *   2                                        un número fijo
+ *   { proficiencyBonus: true }               «igual a tu Bonificador de Competencia»
+ *   { abilityModifier: 'INT', min: 1 }       «igual a tu modificador de Inteligencia (mínimo una)»
+ *   { abilityModifier: 'PRIMARY', min: 1 }   la Característica Principal del Apoyo (sale de build.choices)
+ *   { byLevel: [{ level: 1, value: 2 }, …] } cambia con el nivel (Segundo Aliento)
+ */
+export type UsesMax =
+  | number
+  | { proficiencyBonus: true }
+  | { abilityModifier: AbilityKey | 'PRIMARY'; min: number }
+  | { byLevel: LevelValue<number>[] };
+
+/**
+ * Un rasgo con usos limitados. Mismo patrón que grants: lo que dice el texto,
+ * en campos que el código puede leer. Cada rasgo dice lo suyo; no hay regla
+ * general.
+ */
+export interface FeatureUses {
+  max: UsesMax;
+  /** El dado que se tira al gastar un uso (Dados de Superioridad). */
+  die?: string | { byLevel: LevelValue<string>[] };
+  shortRest: RestRecovery | { byLevel: LevelValue<RestRecovery>[] };
+  longRest: 'all';
+  /** También se recuperan todos al tirar Iniciativa. */
+  onInitiative?: 'all';
+}
+
+/** Lo que hace el propio descanso por tener este rasgo. Modificadores con su signo. */
+export interface RestEffects {
+  /** Curtido (Montaraz): −1 al terminar un descanso corto. */
+  exhaustionModifier?: number;
+  /** Ingenioso: obtiene Inspiración Heroica al terminar un descanso largo. */
+  heroicInspiration?: boolean;
+}
+
 export interface FeatureBlock {
   title: string;
   description: string;
+  uses?: FeatureUses;
+  onShortRest?: RestEffects;
+  onLongRest?: RestEffects;
 }
 
 export const COMPENDIUM_CATALOGS = {
@@ -109,7 +164,7 @@ export const COMPENDIUM_CATALOGS = {
      * situarlo: espada larga 15, escudo 10, armadura de cuero 10, cota de
      * malla 75, paquete de explorador 10.
      */
-    startingGold: 100,
+    startingGold: 150,
   },
   abilities: [
     { key: 'STR', name: 'Fuerza', short: 'FUE' },

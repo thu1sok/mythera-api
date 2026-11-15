@@ -3,6 +3,8 @@ import { Document } from 'mongoose';
 import {
   CompendiumChoice,
   CompendiumDirectGrants,
+  FeatureUses,
+  RestEffects,
 } from './compendium-mechanics.types';
 
 export type CompendiumArchetypeDocument = CompendiumArchetype & Document;
@@ -11,9 +13,12 @@ export interface ArchetypeLevelFeature {
   level: number; // Global character level: 3, 6, 10 (no multiclassing)
   title: string;
   description: string;
-  subFeatures?: { title: string; description: string }[];
+  subFeatures?: { title: string; description: string; uses?: FeatureUses }[];
   grants?: CompendiumDirectGrants;
   choices?: CompendiumChoice[];
+  uses?: FeatureUses;
+  onShortRest?: RestEffects;
+  onLongRest?: RestEffects;
 }
 
 export interface CompanionStatBlock {
