@@ -5,9 +5,14 @@ import { CompendiumCondition } from '../../schema/wiki/compendium/compendium-con
 // src/app/pages/wiki/pages/compendium/rules/game-rules-data.ts del front, de
 // Thu1 y Adrián: no se reescriben aquí. Lo único nuestro es `mechanics`.
 //
-// Agarrado, Asustado, Influenciado y Oculto llevan `mechanics` vacío a
-// propósito: dependen de la posición y de la línea de visión, y la ficha no
-// sabe eso. Se marcan y se leen, pero no restan solos.
+// Asustado, Influenciado y Oculto llevan `mechanics` vacío a propósito:
+// dependen de la posición y de la línea de visión, y la ficha no sabe eso. Se
+// marcan y se leen, pero no restan solos. Agarrado, igual, salvo la Velocidad
+// 0, que es plana: la Desventaja al atacar a otros depende de a quién atacas.
+//
+// La ficha aplica los campos que tocan las tiradas del jugador (speedZero,
+// las Desventajas propias, autoFailStrDexSaves) y enseña sin aplicarlos los
+// del máster y los que dependen de la prueba (ver el schema).
 //
 // Tampoco tienen campo «No puedes hablar» (Incapacitado) ni «Sueltas los
 // objetos que sostienes» (Inconsciente): la ficha no aplica ninguna de las
@@ -27,7 +32,9 @@ export const DEFAULT_CONDITIONS: Partial<CompendiumCondition>[] = [
       'La criatura que te agarra puede arrastrarte o transportarte. Cada pie recorrido le cuesta 2 pies de movimiento.',
       'Liberarse: Puedes utilizar tu Acción para realizar una prueba de Fuerza (Atletismo) o Destreza (Acrobacias) contra la CD del agarre. La condición también termina si quien te agarra queda Incapacitado o si dejas de estar a su alcance.',
     ],
-    mechanics: {},
+    mechanics: {
+      speedZero: true,
+    },
     isDefault: true,
   },
   {

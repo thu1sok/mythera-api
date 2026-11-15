@@ -22,9 +22,16 @@ export interface ConditionLevel {
 }
 
 /**
- * Lo que la ficha aplica. Solo lleva campos que la ficha lee: uno que nadie
- * lee parece aplicado y no lo está. Agarrado, Asustado, Influenciado y Oculto
- * dependen de la posición y de la línea de visión, y van vacíos a propósito.
+ * Los efectos de un estado, en campos. La ficha:
+ * - aplica a los números y al tirador los que tocan las tiradas del jugador:
+ *   speedZero, disadvantageOnAttacks, disadvantageOnAbilityChecks,
+ *   disadvantageOnDexSaves, disadvantageOnInitiative, autoFailStrDexSaves,
+ *   implies y levels;
+ * - enseña sin aplicarlos, diciendo que los lleva el máster, los demás: los
+ *   de quien te ataca, noActions y noConcentration, y los fallos de vista y
+ *   oído (la ficha no sabe qué prueba los requiere).
+ * Asustado, Influenciado y Oculto dependen de la posición y de la línea de
+ * visión y van vacíos a propósito; Agarrado solo lleva la Velocidad 0.
  */
 export interface ConditionMechanics {
   /** La Velocidad es 0 y no puede aumentar. */
