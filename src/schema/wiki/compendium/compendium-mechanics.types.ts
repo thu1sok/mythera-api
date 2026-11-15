@@ -154,6 +154,13 @@ export const COMPENDIUM_CATALOGS = {
     race: 'Humano',
     multiclassingAllowed: false,
     maxCharacterLevel: 12,
+    /**
+     * Puntos de experiencia minimos de cada nivel: el indice 0 es el nivel 1,
+     * el 11 es el nivel 12. Una entrada por nivel hasta maxCharacterLevel.
+     * Es la tabla de D&D 5.a cortada en el 12: si algun dia sube el tope, se
+     * anaden filas aqui (13: 120.000, 14: 140.000...).
+     */
+    experienceByLevel: [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000],
     initialTraitPoints: 4,
     initialOriginFeats: 1,
     archetypeSelectionLevel: 3,

@@ -166,6 +166,13 @@ export interface CharacterState {
    * no el de quien lo aplica; los dos descansos lo devuelven entero.
    */
   treatmentsUsed: number;
+  /**
+   * Puntos de experiencia (BRIEFING-NIVELES). Los suma el jugador en mesa.
+   * NO mueven build.level: solo dicen a que nivel se tiene derecho, y la
+   * ficha avisa. Ausente = el minimo del nivel actual (systemRules.
+   * experienceByLevel), asi que las fichas de antes no se migran.
+   */
+  experience?: number;
 }
 
 export interface EquippedItem {
