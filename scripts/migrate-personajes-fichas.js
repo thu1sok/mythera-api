@@ -30,6 +30,13 @@ const { ObjectId } = mongoose.Types;
 
 const QUITAR = ['name', 'age', 'gender', 'portraitUrl', 'description', 'playerId'];
 
+// Fichas cuya description NO es un trasfondo: el personaje nace con el
+// trasfondo vacío. Por _id de la ficha.
+// - Trino de Vera «Cuchy» (Javi): «Quita lo de los pronombres» es una nota suya,
+//   no un trasfondo. Está apuntada en mythera-docs/informe-atlas-20261115.md
+//   para preguntársela.
+const DESCRIPCION_NO_ES_TRASFONDO = new Set(['6af1f9b715e5715d393a3a7f']);
+
 function assertLocal(uri) {
   const host = uri.replace(/^mongodb(\+srv)?:\/\/([^@]*@)?/, '').split(/[/:?]/)[0];
   if (!['localhost', '127.0.0.1'].includes(host)) {
@@ -78,7 +85,7 @@ async function main() {
       age: s.age ?? '',
       ...(s.gender ? { gender: s.gender } : {}),
       ...(s.portraitUrl ? { imageUrl: s.portraitUrl } : {}),
-      backstory: s.description ?? '',
+      backstory: DESCRIPCION_NO_ES_TRASFONDO.has(String(s._id)) ? '' : (s.description ?? ''),
       deitiesIds: [],
       isDead: false,
       eventsAndAchievements: [],
@@ -87,6 +94,9 @@ async function main() {
     };
     console.log(`  + ${etiqueta} · ${player.name}`);
     console.log(`      personaje ${characterId}: edad "${personaje.age}", genero ${personaje.gender ?? '-'}, retrato ${personaje.imageUrl ? 'si' : 'no'}, trasfondo "${personaje.backstory}"`);
+    if (DESCRIPCION_NO_ES_TRASFONDO.has(String(s._id)) && s.description) {
+      console.log(`      description NO pasa a trasfondo (es una nota, no un trasfondo): "${s.description}"`);
+    }
     console.log(`      ficha: characterId, completed true, sin ${QUITAR.join(', ')}`);
     ops.push(() => db.collection('characters').insertOne(personaje));
     ops.push(() =>
