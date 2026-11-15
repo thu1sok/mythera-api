@@ -7,21 +7,13 @@ import {
   Param,
   Patch,
   Post,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CharacterSheetsService } from './character-sheets.service';
-import { CloudinaryService } from '../shared/services/cloudinary.service';
 
 /**
- * Las rutas que escriben aceptan multipart/form-data, igual que el resto de
- * la app: el retrato viaja en el campo 'file' y lo sube CloudinaryService.
- *
- * Con FormData todo llega como texto, asi que los bloques que son objetos
- * (build, state, equipment, currency, overrides) viajan como JSON en una
- * cadena y hay que deshacerlos aqui. Si el cliente manda JSON normal, sin
- * fichero, tambien funciona: solo se deshace lo que venga como cadena.
+ * La ficha ya no tiene retrato (vive en el personaje, BRIEFING-JUGADORES
+ * §2), asi que las rutas son JSON. Se sigue tolerando que un bloque llegue
+ * como JSON en una cadena: solo se deshace lo que venga como cadena.
  */
 @Controller('character-sheets')
 export class CharacterSheetsController {
@@ -33,10 +25,7 @@ export class CharacterSheetsController {
     'overrides',
   ];
 
-  constructor(
-    private readonly sheetsService: CharacterSheetsService,
-    private readonly cloudinary: CloudinaryService,
-  ) {}
+  constructor(private readonly sheetsService: CharacterSheetsService) {}
 
   private deshacerFormData(body: any): any {
     const salida = { ...body };
@@ -65,38 +54,30 @@ export class CharacterSheetsController {
     return this.sheetsService.findByPlayer(playerId);
   }
 
+  /** La ficha de un personaje. 404 si aun no tiene. */
+  @Get('by-character/:characterId')
+  async findByCharacter(@Param('characterId') characterId: string) {
+    return this.sheetsService.findByCharacter(characterId);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.sheetsService.findOne(id);
   }
 
-  /** El creador, al terminar. */
+  /** El creador, en el primer paso mecanico. Pide characterId. */
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(@Body() body: any, @UploadedFile() file?: Express.Multer.File) {
-    const datos = this.deshacerFormData(body);
-    if (file) {
-      datos.portraitUrl = await this.cloudinary.uploadImage(file);
-    }
-    return this.sheetsService.create(datos);
+  async create(@Body() body: any) {
+    return this.sheetsService.create(this.deshacerFormData(body));
   }
 
-  /** La ficha de mesa: state, equipment, currency, overrides y notes. */
+  /** La ficha de mesa y el final del creador: state, equipment, currency, overrides, notes y completed. */
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('file'))
-  async updateState(
-    @Param('id') id: string,
-    @Body() body: any,
-    @UploadedFile() file?: Express.Multer.File,
-  ) {
-    const datos = this.deshacerFormData(body);
-    if (file) {
-      datos.portraitUrl = await this.cloudinary.uploadImage(file);
-    }
-    return this.sheetsService.updateState(id, datos);
+  async updateState(@Param('id') id: string, @Body() body: any) {
+    return this.sheetsService.updateState(id, this.deshacerFormData(body));
   }
 
-  /** Subir de nivel. */
+  /** Los pasos del creador y subir de nivel. */
   @Patch(':id/build')
   async updateBuild(@Param('id') id: string, @Body() body: any) {
     return this.sheetsService.updateBuild(id, this.deshacerFormData(body));

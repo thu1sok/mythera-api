@@ -6,6 +6,16 @@ import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CloudinaryService } from '../shared/services/cloudinary.service';
 import { Character } from '../schema/wiki/character.schema';
 
+/**
+ * Con FormData, "Ninguna" llega como cadena vacia, y Mongoose no sabe
+ * convertir '' a ObjectId (CastError, 500). Vacio = sin referencia.
+ */
+function vaciarReferencias(payload: Record<string, unknown>): void {
+    for (const campo of ['subraceId', 'currentPlaceId', 'factionId', 'playerId']) {
+        if (payload[campo] === '') payload[campo] = null;
+    }
+}
+
 @Controller('characters')
 export class CharactersController {
     constructor(
@@ -41,6 +51,7 @@ export class CharactersController {
         if (payload.isDead !== undefined) {
             payload.isDead = String(payload.isDead) === 'true';
         }
+        vaciarReferencias(payload as Record<string, unknown>);
 
         return this.charactersService.create(payload as any);
     }
@@ -83,6 +94,7 @@ export class CharactersController {
         if (payload.isDead !== undefined) {
             payload.isDead = String(payload.isDead) === 'true';
         }
+        vaciarReferencias(payload as Record<string, unknown>);
 
         return this.charactersService.update(id, payload as any);
     }

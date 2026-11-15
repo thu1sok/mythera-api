@@ -3,26 +3,22 @@ import { Document } from 'mongoose';
 
 export type CompendiumItemDocument = CompendiumItem & Document;
 
-  export type ItemCategory =
-  | 'WEAPON'
-  | 'ARMOR'
-  | 'SHIELD'
-  | 'AMMUNITION'
-  | 'GEAR'
-  | 'PACK'
-  | 'TOOL'
-  | 'INSTRUMENT';
-
-export type CompendiumItemCategory = ItemCategory;
+/** Las del documento EQUIPO Y TESOROS. Las Herramientas y Materiales van en TOOL. */
+export type ItemCategory = 'WEAPON' | 'ARMOR' | 'SHIELD' | 'AMMUNITION' | 'TOOL';
 
 /**
- * El equipo que se compra: armas, armaduras, munición, paquetes, útiles,
+ * El equipo que se compra: armas, armaduras, municion, paquetes, utiles,
  * herramientas e instrumentos.
  *
- * Es la fuente única de los artículos concretos. El catálogo
+ * Es la fuente unica de los articulos concretos. El catalogo
  * (COMPENDIUM_CATALOGS) se queda solo con los grupos de competencia
  * ('armas_simples', 'herramientas_artesano') y las listas fijas
- * (características, habilidades, tipos de daño, maestrías).
+ * (caracteristicas, habilidades, tipos de dano, maestrias). Un arma suelta
+ * vive aqui y en ningun otro sitio.
+ *
+ * De aqui salen las dos tiendas: la inicial del creador filtrando por
+ * costInCopper, y la secundaria de la ficha cuando existan los objetos
+ * magicos.
  */
 @Schema({ timestamps: true })
 export class CompendiumItem {
@@ -34,166 +30,142 @@ export class CompendiumItem {
 
   @Prop({
     required: true,
-    enum: [
-      'WEAPON',
-      'ARMOR',
-      'SHIELD',
-      'AMMUNITION',
-      'GEAR',
-      'PACK',
-      'TOOL',
-      'INSTRUMENT',
-    ],
+    enum: ['WEAPON', 'ARMOR', 'SHIELD', 'AMMUNITION', 'TOOL'],
   })
   category: ItemCategory;
 
   @Prop({ default: false })
   isDefault: boolean;
 
-  /** Tal y como se muestra: '15 PO', '2 po', '5 PP', '1 PC'. */
-  @Prop({ default: '—' })
+  // --- precio y peso, comunes a todo ---------------------------------------
+  /** Tal y como se muestra: '15 PO', '5 PP', '1 PC'. */
+  @Prop({ default: '' })
   cost: string;
 
-  /** Precio en cobre, para ordenar y filtrar. -1 si varía. 1 PO = 100 PC. */
+  /** El mismo precio en cobre, para ordenar y filtrar. -1 si varia. */
   @Prop({ default: 0 })
   costInCopper: number;
 
-  /** En kilos. */
-  @Prop({ default: '—' })
+  /** En kilos. El SRD lo da en libras. */
+  @Prop({ default: '' })
   weight: string;
 
-  // ==========================================
-  // ARMAS (Propiedades para hoja de personaje y tiradas)
-  // ==========================================
-  /** Grupo de competencia: 'armas_simples' o 'armas_marciales'. */
-  @Prop({ enum: ['armas_simples', 'armas_marciales'] })
-  group?: string;
+  // --- armas ---------------------------------------------------------------
+  @Prop({ required: false })
+  damage?: string;
 
-  @Prop({ default: false })
-  melee?: boolean;
-
-  /** Tiene la propiedad Sutileza / Sutil: permite usar Fuerza o Destreza. */
-  @Prop({ default: false })
-  finesse?: boolean;
-
-  /** Arma de fuego. */
-  @Prop({ default: false })
-  requiresGunpowder?: boolean;
-
-  @Prop()
-  damage?: string; // e.g. "1d4", "1d6", "1d8", "2d6", "1d10", "1d12"
-
-  @Prop()
-  damageDice?: number; // e.g. 1 o 2
-
-  @Prop()
-  damageDie?: number; // e.g. 4, 6, 8, 10, 12
-
-  @Prop({ enum: ['perforante', 'cortante', 'contundente'] })
+  @Prop({ required: false })
   damageType?: string;
 
-  @Prop({ enum: ['P', 'T', 'C'] })
-  damageTypeCode?: string;
-
-  @Prop({ type: [String], default: [] })
+  @Prop({ type: Array, default: undefined })
   properties?: string[];
 
-  /** Clave de COMPENDIUM_CATALOGS.masteries: 'acoso', 'ataque-rapido', 'derribo', etc. */
-  @Prop()
+  /** Clave de COMPENDIUM_CATALOGS.masteries: 'hendedura', 'refilon', ... */
+  @Prop({ required: false })
   mastery?: string;
 
-  @Prop()
-  masteryName?: string;
+  /** Grupo de competencia: 'armas_simples' o 'armas_marciales'. */
+  @Prop({ required: false })
+  group?: string;
 
-  @Prop()
-  versatileDamage?: string; // e.g. "1d8", "1d10"
+  @Prop({ required: false })
+  melee?: boolean;
 
-  @Prop()
-  versatileDie?: number;
+  /** Tiene la propiedad Sutileza: entra en 'armas_marciales_sutileza'. */
+  @Prop({ required: false })
+  finesse?: boolean;
 
-  @Prop()
-  rangeNormal?: number; // e.g. 20, 80, 150
+  /** El dado de dano a dos manos, de la propiedad Versatil. */
+  @Prop({ required: false })
+  versatileDamage?: string;
 
-  @Prop()
-  rangeLong?: number; // e.g. 60, 320, 600
+  // --- propiedades, como campos, para no tener que leer el texto ----------
+  @Prop({ required: false }) light?: boolean;        // Ligera
+  @Prop({ required: false }) heavy?: boolean;        // Pesada
+  @Prop({ required: false }) reach?: boolean;        // Alcance
+  @Prop({ required: false }) thrown?: boolean;       // Arrojadiza
+  @Prop({ required: false }) ammunition?: boolean;   // Municion
+  @Prop({ required: false }) loading?: boolean;      // Recarga
+  @Prop({ required: false }) twoHanded?: boolean;    // A Dos Manos
 
-  @Prop({ default: false })
-  light?: boolean;
+  /** Alcance normal y maximo, en pies. */
+  @Prop({ required: false }) rangeNormal?: number;
+  @Prop({ required: false }) rangeMax?: number;
 
-  @Prop({ default: false })
-  heavy?: boolean;
+  /**
+   * Armas con la propiedad Munición: el slug de la munición que gastan
+   * (arco → flechas). Sin esto la ficha solo podría deducirlo del nombre.
+   */
+  @Prop({ required: false }) ammoSlug?: string;
 
-  @Prop({ default: false })
-  twoHanded?: boolean;
-
-  @Prop({ default: false })
-  reach?: boolean;
-
-  @Prop({ default: false })
-  thrown?: boolean;
-
-  @Prop({ default: false })
-  ammunition?: boolean;
-
-  @Prop({ default: false })
-  loading?: boolean;
-
-  @Prop()
-  special?: string;
-
-  // ==========================================
-  // ARMADURAS Y ESCUDO
-  // ==========================================
-  /** 'Ligera' | 'Media' | 'Pesada' | 'Escudo'. */
-  @Prop({ enum: ['Ligera', 'Media', 'Pesada', 'Escudo'] })
-  armorType?: string;
-
-  /** La cadena que se enseña: '11 + DES', '14 + mod. Destreza (máx. 2)', '18', '+2'. */
-  @Prop()
+  // --- armaduras y escudo --------------------------------------------------
+  /** La cadena que se ensena: '14 + mod. Destreza (max. 2)', '18', '+2'. */
+  @Prop({ required: false })
   armorClass?: string;
 
-  /** Base numérica de CA (o +2 en el escudo). */
-  @Prop()
+  /**
+   * El mismo valor como numero, para calcular. En el escudo son los +2 que
+   * suma, no una Clase de Armadura.
+   */
+  @Prop({ required: false })
   baseArmorClass?: number;
 
-  /** Tope del modificador de Destreza (2 en Medias). */
-  @Prop()
+  /**
+   * El tope de modificador de Destreza: 2 en las Medias. Ausente en las
+   * Ligeras, que lo suman entero, y en las Pesadas, que lo ignoran.
+   *
+   * Un modificador NEGATIVO si resta, tambien con tope: min(mod, 2).
+   */
+  @Prop({ required: false })
   maxDexBonus?: number;
 
-  /** La armadura ignora la Destreza en ambos sentidos (Pesadas). */
-  @Prop({ default: false })
+  /**
+   * La armadura ignora la Destreza en los DOS sentidos. Es el caso de las
+   * Pesadas: una cota de malla da 16 con Destreza 8 y con Destreza 18.
+   * No es lo mismo que maxDexBonus: 0, que si dejaria restar un negativo.
+   */
+  @Prop({ required: false })
   ignoresDex?: boolean;
 
-  @Prop()
-  strengthRequirement?: string; // e.g. "Fue 13", "Fue 15"
+  /** 'Ligera' | 'Media' | 'Pesada' | 'Escudo'. */
+  @Prop({ required: false })
+  armorType?: string;
 
-  @Prop()
-  minStrength?: number;
+  @Prop({ required: false })
+  strengthRequirement?: string;
 
-  @Prop({ default: false })
+  @Prop({ required: false })
   stealthDisadvantage?: boolean;
 
-  // ==========================================
-  // HERRAMIENTAS, INSTRUMENTOS, ÚTILES Y PAQUETES
-  // ==========================================
-  /** Grupo de COMPENDIUM_CATALOGS.tools al que corresponde. */
-  @Prop()
-  toolGroup?: string;
-
-  @Prop({ default: 10 })
-  maxUses?: number;
-
-  // Munición
-  @Prop()
+  // --- municion ------------------------------------------------------------
+  @Prop({ required: false })
   amount?: number;
 
-  @Prop()
+  @Prop({ required: false })
   storedIn?: string;
 
-  // Paquetes
-  @Prop()
+  // --- paquetes ------------------------------------------------------------
+  @Prop({ required: false })
   contents?: string;
+
+  // --- herramientas e instrumentos ----------------------------------------
+  /**
+   * Con que grupo de COMPENDIUM_CATALOGS.tools se corresponde: la tienda
+   * vende objetos sueltos y las competencias van por familias. Sin esto no
+   * hay forma de saber si tienes competencia con lo que compras.
+   *
+   * Los juegos (Dados, Cartas) no lo llevan: el catalogo no tiene una
+   * competencia para ellos.
+   */
+  @Prop({ required: false })
+  toolGroup?: string;
+
+  /** Usos maximos. Las Herramientas y Materiales traen 10. */
+  @Prop({ required: false }) maxUses?: number;
+
+  // --- comun ---------------------------------------------------------------
+  /** Texto libre que se muestra en la tienda y en la ficha. */
+  @Prop({ required: false }) notes?: string;
 }
 
-export const CompendiumItemSchema =
-  SchemaFactory.createForClass(CompendiumItem);
+export const CompendiumItemSchema = SchemaFactory.createForClass(CompendiumItem);

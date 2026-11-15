@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsOptional, IsMongoId } from 'class-validator';
+import { IsIn, IsString, IsArray, IsOptional, IsMongoId } from 'class-validator';
 
 export class UpdateCharacterDto {
     @IsString()
@@ -8,6 +8,14 @@ export class UpdateCharacterDto {
     @IsString()
     @IsOptional()
     playerName?: string;
+
+    @IsString()
+    @IsOptional()
+    age?: string;
+
+    @IsIn(['el', 'ella'])
+    @IsOptional()
+    gender?: 'el' | 'ella';
 
     @IsMongoId()
     @IsOptional()

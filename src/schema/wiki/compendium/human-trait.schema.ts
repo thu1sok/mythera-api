@@ -4,6 +4,8 @@ import {
   CompendiumChoice,
   CompendiumDirectGrants,
   CompendiumPrerequisites,
+  FeatureUses,
+  RestEffects,
 } from './compendium-mechanics.types';
 
 export type HumanTraitDocument = HumanTrait & Document;
@@ -36,6 +38,17 @@ export class HumanTrait {
 
   @Prop({ type: Object, default: {} })
   grants: CompendiumDirectGrants;
+
+  /**
+   * Usos limitados (Rudo) y efectos del descanso (Ingenioso). Sin @Prop,
+   * Mongoose los descartaría en silencio al sembrar: este documento tiene
+   * propiedades declaradas, no un objeto libre.
+   */
+  @Prop({ type: Object })
+  uses?: FeatureUses;
+
+  @Prop({ type: Object })
+  onLongRest?: RestEffects;
 
   @Prop({ type: Array, default: [] })
   choices: CompendiumChoice[];

@@ -101,6 +101,7 @@ export const DEFAULT_HUMAN_TRAITS: Partial<HumanTrait>[] = [
   {
     slug: 'rudo',
     name: 'Rudo',
+    uses: { max: 1, shortRest: 'none', longRest: 'all' },
     pointCost: 2,
     repeatable: false,
     isDefault: true,
@@ -196,6 +197,7 @@ export const DEFAULT_HUMAN_TRAITS: Partial<HumanTrait>[] = [
   {
     slug: 'ingenioso',
     name: 'Ingenioso',
+    onLongRest: { heroicInspiration: true },
     pointCost: 3,
     repeatable: false,
     isDefault: true,

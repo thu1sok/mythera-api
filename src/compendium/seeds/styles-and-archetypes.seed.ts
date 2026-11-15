@@ -75,6 +75,7 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       {
         level: 1,
         title: 'Segundo Aliento',
+        uses: { max: { byLevel: [{ level: 1, value: 2 }, { level: 4, value: 3 }, { level: 10, value: 4 }] }, shortRest: 'one', longRest: 'all' },
         description:
           'Como Acción Adicional, puedes recuperar Puntos de Golpe equivalentes a 1d10 + tu nivel. Puedes utilizar este rasgo dos veces. Recuperas un uso al finalizar un Descanso Corto y todos los usos al finalizar un Descanso Largo. En el nivel 4 dispones de tres usos y en el nivel 10, de cuatro.',
       },
@@ -96,6 +97,7 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       {
         level: 2,
         title: 'Oleada de Acción',
+        uses: { max: 1, shortRest: 'all', longRest: 'all' },
         description:
           'Durante tu turno, puedes realizar una Acción adicional. Recuperas el uso de este rasgo al finalizar un Descanso Corto o Largo.',
       },
@@ -135,6 +137,7 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       {
         level: 7,
         title: 'Indomable',
+        uses: { max: 1, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando fallas una Tirada de Salvación, puedes repetirla y añadir a la nueva tirada un bonificador igual a tu nivel. Debes utilizar el nuevo resultado. Recuperas el uso de este rasgo al finalizar un Descanso Largo.',
       },
@@ -506,6 +509,7 @@ export const DEFAULT_STYLES: Partial<CompendiumStyle>[] = [
       {
         level: 5,
         title: 'Intervención Oportuna',
+        uses: { max: { abilityModifier: 'PRIMARY', min: 1 }, shortRest: 'one', longRest: 'all' },
         description:
           'Cuando una criatura que puedas ver realice una tirada de ataque contra ti o contra otra criatura situada a un máximo de 30 pies de ti, puedes utilizar tu Reacción para imponer Desventaja a esa tirada.\n\nPuedes utilizar este rasgo tantas veces como indique el modificador de tu Característica Principal (mínimo una vez). Recuperas un uso al finalizar un Descanso Corto y todos los usos gastados al finalizar un Descanso Largo.',
       },
@@ -777,12 +781,16 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 6,
         title: 'Sed de sangre',
+        // El texto dice «modificador de Competencia», que no existe: es el
+        // Bonificador, como en Golpe mortal. Pendiente de Adrián (el texto es suyo).
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando una criatura que puedas ver a 30 pies o menos de ti reciba daño de otra criatura y conserve al menos 1 Punto de Golpe, puedes utilizar tu Reacción para moverte hasta la mitad de tu Velocidad hacia ella. Este movimiento no provoca Ataques de Oportunidad.\n\nSi terminas este movimiento a tu alcance, puedes realizar inmediatamente un ataque cuerpo a cuerpo contra esa criatura como parte de la misma Reacción.\n\nPuedes utilizar este rasgo un número de veces igual a tu modificador de Competencia. Recuperas todos los usos gastados cuando terminas un Descanso Largo.',
       },
       {
         level: 10,
         title: 'Golpe mortal',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando impactes a una criatura con un ataque con arma, puedes intentar asestarle un Golpe Mortal. El objetivo debe realizar una Tirada de Salvación de Constitución con una CD igual a 8 + tu Bonificador de Competencia + tu modificador de Destreza.\n\nSi falla la salvación, puedes gastar uno o más usos de este rasgo para infligir daño adicional del mismo tipo que el arma. Este daño es de 2d8 si gastas un uso, más 1d8 por cada uso adicional que gastes en el mismo golpe.\n\nSi el objetivo supera la Tirada de Salvación, no gastas ningún uso de este rasgo y puedes volver a intentarlo en un ataque posterior.\n\nUna vez que una criatura haya sufrido el daño adicional de tu Golpe Mortal, no puedes volver a utilizar este rasgo contra ella durante el mismo combate.\n\nDispones de un número de usos igual a tu Bonificador de Competencia y recuperas todos los usos gastados al finalizar un Descanso Largo.',
       },
@@ -821,6 +829,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 3,
         title: 'Arenga',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Como acción adicional, elige un número de aliados que puedas ver a 30 pies o menos de ti igual a tu modificador de Carisma (mínimo uno). Cada aliado elegido recupera una cantidad de Puntos de Golpe igual a 1d4 + tu nivel de personaje.\n\nPuedes utilizar este rasgo un número de veces igual a tu Bonificador de Competencia y recuperas todos los usos gastados cuando terminas un Descanso Largo.',
       },
@@ -833,6 +842,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 10,
         title: 'Voz de mando',
+        uses: { max: 1, shortRest: 'all', longRest: 'all' },
         description:
           'Como Acción Adicional, elige un número de aliados que puedas ver a un máximo de 30 pies de ti igual a tu modificador de Carisma (mínimo uno). Cada criatura elegida puede utilizar inmediatamente su Reacción para realizar una de las siguientes acciones:\n• Atacar: Realizar un ataque con un arma o un Golpe sin Armas.\n• Mover: Moverse hasta la mitad de su Velocidad sin provocar Ataques de Oportunidad.\n\nUna vez utilizado este rasgo, no puedes volver a utilizarlo hasta que termines un Descanso Corto o Largo.',
       },
@@ -851,6 +861,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 3,
         title: 'Marcar presa',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Como Acción Adicional, elige una criatura que puedas ver a un máximo de 90 pies de ti. Esa criatura queda marcada como tu presa durante 1 hora o hasta que marques a otra criatura (gastando otro uso). Una vez por turno, cuando impactes a tu presa con una tirada de ataque, puedes infligirle 1d6 de daño adicional. Puedes utilizar este rasgo un número de veces igual a tu Bonificador de Competencia y recuperas todos los usos gastados cuando terminas un Descanso Largo.',
       },
@@ -892,6 +903,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
         subFeatures: [
           {
             title: 'Dados de Superioridad',
+            uses: { max: { byLevel: [{ level: 3, value: 4 }, { level: 6, value: 5 }, { level: 10, value: 6 }] }, die: { byLevel: [{ level: 3, value: 'd8' }, { level: 6, value: 'd10' }, { level: 10, value: 'd12' }] }, shortRest: 'all', longRest: 'all' },
             description:
               'Tienes cuatro dados d8 de Superioridad. Para utilizar una maniobra debes gastar un Dado de Superioridad cuando esta así lo indique. Recuperas todos los Dados de Superioridad gastados cuando terminas un Descanso Corto o Largo.',
           },
@@ -1164,6 +1176,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 3,
         title: 'Conoce a tu enemigo',
+        uses: { max: 1, shortRest: 'none', longRest: 'all' },
         description:
           'Como Acción Adicional, puedes estudiar a una criatura que puedas ver a un máximo de 30 pies de ti, identificando sus movimientos, sus defensas y los puntos débiles que puedes aprovechar. Elige entre tú o un aliado que pueda verte u oírte. Durante 1 minuto, la criatura elegida obtiene los siguientes beneficios contra el enemigo estudiado:',
         subFeatures: [
@@ -1187,6 +1200,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 6,
         title: 'Destello de erudito',
+        uses: { max: { abilityModifier: 'INT', min: 1 }, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando tú o una criatura que puedas ver a 30 pies o menos de ti falle un Ataque, Prueba de Característica o una Tirada de Salvación, puedes utilizar tu Reacción para añadir una bonificación a la tirada igual a tu modificador de Inteligencia (mínimo de +1), lo que puede convertir el fallo en un éxito. Puedes utilizar esta Reacción un número de veces igual a tu modificador de Inteligencia (mínimo de una vez). Recuperas todos los usos gastados cuando terminas un Descanso Largo.',
       },
@@ -1286,6 +1300,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 10,
         title: 'Desafía a la muerte',
+        grants: { deathSaveAdvantage: true, deathSaveRecoveryFrom: 18, damageAtZeroIsFailure: true },
         description:
           'Tienes Ventaja en las Tiradas de Salvación contra Muerte. Además, cuando obtienes un resultado de 18, 19 o 20 en una Tirada de Salvación contra Muerte, obtienes los beneficios de haber sacado un 20 en esa tirada. Cuando estás a 0 Puntos de Golpe o menos y recibes daño, incluso mediante la acción Rematar, no mueres instantáneamente por ese daño. En su lugar, acumulas un fallo en tus Tiradas de Salvación contra Muerte.\n\nSi acumulas tres fallos, mueres normalmente.',
       },
@@ -1390,6 +1405,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 6,
         title: 'Curtido',
+        onShortRest: { exhaustionModifier: -1 },
         description:
           'Cuando terminas un descanso corto, tu nivel de Agotamiento se reduce en 1.',
       },
@@ -1442,6 +1458,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 10,
         title: 'Resiliencia compartida',
+        uses: { max: { abilityModifier: 'WIS', min: 1 }, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando un aliado que se encuentre dentro del alcance de tu Convicción falle una Tirada de Salvación, puedes utilizar tu Reacción para permitirle repetir la tirada. El aliado debe utilizar el nuevo resultado. Puedes utilizar este rasgo un número de veces igual a tu modificador de Sabiduría (mínimo de una vez). Recuperas todos los usos gastados cuando terminas un Descanso Largo.',
       },
@@ -1460,6 +1477,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 3,
         title: 'Arrebato',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'one', longRest: 'all' },
         description:
           'Puedes entrar en Arrebato un número de veces igual a tu Bonificador de Competencia. Recuperas uno de los usos gastados cuando terminas un Descanso Corto y todos los usos gastados cuando terminas un Descanso Largo.\n\nMientras tu Arrebato está activo, obtienes los siguientes beneficios:',
         subFeatures: [
@@ -1545,6 +1563,8 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
       {
         level: 3,
         title: 'Inspiración',
+        // Desde el nivel 6 (Fuente de inspiración) también se recupera en el corto.
+        uses: { max: { abilityModifier: 'CHA', min: 1 }, shortRest: { byLevel: [{ level: 3, value: 'none' }, { level: 6, value: 'all' }] }, longRest: 'all' },
         description:
           'Sabes inspirar a otros mediante tus palabras, tu música, tus relatos o tus interpretaciones. Tu capacidad para hacerlo está representada por un d6 de dado de Inspiración.',
         subFeatures: [

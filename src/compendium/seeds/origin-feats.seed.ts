@@ -115,6 +115,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
     features: [
       {
         title: 'Puntos de Suerte',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Tienes un número de Puntos de Suerte igual a tu Bonificador de Competencia, que puedes gastar para obtener los beneficios indicados a continuación. Recuperas todos los Puntos de Suerte gastados al finalizar un Descanso Largo.',
       },
@@ -148,6 +149,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
     features: [
       {
         title: 'Ánimo Contagioso',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'all', longRest: 'all' },
         description:
           'Cuando un aliado que puedas ver a 60 pies de ti gaste Inspiración Heroica, puedes obtener Inspiración Heroica si no la tienes. Puedes usar este beneficio un número de veces igual a tu Bonificador de Competencia y recuperas todos los usos gastados al finalizar un Descanso Corto o Largo.',
       },
@@ -304,8 +306,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
     features: [
       {
         title: 'Competencia con Instrumentos',
-        description:
-          'Obtienes competencia con un Instrumento Musical de tu elección.',
+        description: 'Obtienes competencia con Instrumentos Musicales.',
       },
       {
         title: 'Canción Reconfortante',
@@ -313,16 +314,12 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
           'Al finalizar un Descanso Corto o Largo, puedes tocar una canción con un Instrumento Musical con el que tengas competencia y otorgar Inspiración Heroica a un número de aliados que puedan oírte igual a tu Bonificador de Carisma.',
       },
     ],
-    grants: {},
-    choices: [
-      {
-        id: 'musico_instrument_choice',
-        label: 'Elige un Instrumento Musical',
-        type: 'INSTRUMENT_PROFICIENCY',
-        count: 1,
-        allowedOptions: ['ANY'],
-      },
-    ],
+    // Los instrumentos son una sola familia (documento EQUIPO Y TESOROS): no
+    // hay nada entre lo que elegir, así que la competencia es fija.
+    grants: {
+      fixedProficiencies: [{ category: 'TOOL', value: 'instrumento_musical' }],
+    },
+    choices: [],
   },
   {
     slug: 'letrado',
@@ -340,6 +337,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
     features: [
       {
         title: 'Lectura Minuciosa',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando realices la acción de Buscar o Estudiar, puedes obtener Ventaja en una tirada de característica realizada como parte de esa acción. Puedes usar este beneficio un número de veces igual a tu Bonificador de Competencia y recuperas todos los usos gastados al finalizar un Descanso Largo. Si la tirada falla, el uso no se consume.',
       },
@@ -368,6 +366,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
       },
       {
         title: 'Grito de Guerra',
+        uses: { max: 1, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando tires Iniciativa y no estés Incapacitado, puedes elegir un número de criaturas igual a tu Bonificador de Competencia que puedas ver y que se encuentren a 30 pies de ti. Cada una obtiene Inspiración Heroica. Una vez uses este beneficio, no podrás volver a hacerlo hasta que finalices un Descanso Largo.',
       },
@@ -505,6 +504,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
       },
       {
         title: 'Fortalecerte',
+        uses: { max: 1, shortRest: 'none', longRest: 'all' },
         description:
           'Cuando falles una Tirada de Salvación de Sabiduría, puedes usar una Reacción para añadir tu Bonificador de Competencia a la tirada, lo que podría convertir el fallo en un éxito. Una vez uses esta Reacción, no podrás volver a hacerlo hasta que finalices un Descanso Largo.',
       },

@@ -3,6 +3,8 @@ import { Document } from 'mongoose';
 import {
   CompendiumChoice,
   CompendiumDirectGrants,
+  FeatureUses,
+  RestEffects,
 } from './compendium-mechanics.types';
 
 export type CompendiumStyleDocument = CompendiumStyle & Document;
@@ -15,6 +17,9 @@ export interface StyleLevelFeature {
   isGeneralFeatSlot?: boolean;
   grants?: CompendiumDirectGrants;
   choices?: CompendiumChoice[];
+  uses?: FeatureUses;
+  onShortRest?: RestEffects;
+  onLongRest?: RestEffects;
 }
 
 export interface StyleInitialTraits {

@@ -66,6 +66,12 @@ export interface CompendiumDirectGrants {
   hpPerLevelBonus?: number; // e.g., +1 (Robusto) or +2 (Duro)
   initiativeProficiency?: boolean; // e.g., Alerta
   initiativeAdvantage?: boolean; // e.g., Asesino / Hombre de Armas / Salvaje
+  // Desafía a la muerte (Hombre de Armas, nivel 10): Ventaja en las Tiradas de
+  // Salvación contra Muerte; desde este número (18) cuentan como un 20; y el
+  // daño a 0 PG, también con Rematar, suma un fallo en vez de matar.
+  deathSaveAdvantage?: boolean;
+  deathSaveRecoveryFrom?: number;
+  damageAtZeroIsFailure?: boolean;
   heroicInspirationOnLongRest?: boolean; // e.g., Ingenioso
   /**
    * Media competencia en las habilidades en las que NO tengas competencia
@@ -89,9 +95,58 @@ export interface CompendiumDirectGrants {
   languages?: string[]; // ['Común']
 }
 
+/** Un valor que cambia con el nivel del personaje: vale la fila más alta ya alcanzada. */
+export interface LevelValue<T> {
+  level: number;
+  value: T;
+}
+
+/** Lo que recupera un recurso al terminar un descanso: nada, un uso o todos. */
+export type RestRecovery = 'none' | 'one' | 'all';
+
+/**
+ * Cuántos usos tiene un rasgo. Lo que dice su texto:
+ *   2                                        un número fijo
+ *   { proficiencyBonus: true }               «igual a tu Bonificador de Competencia»
+ *   { abilityModifier: 'INT', min: 1 }       «igual a tu modificador de Inteligencia (mínimo una)»
+ *   { abilityModifier: 'PRIMARY', min: 1 }   la Característica Principal del Apoyo (sale de build.choices)
+ *   { byLevel: [{ level: 1, value: 2 }, …] } cambia con el nivel (Segundo Aliento)
+ */
+export type UsesMax =
+  | number
+  | { proficiencyBonus: true }
+  | { abilityModifier: AbilityKey | 'PRIMARY'; min: number }
+  | { byLevel: LevelValue<number>[] };
+
+/**
+ * Un rasgo con usos limitados. Mismo patrón que grants: lo que dice el texto,
+ * en campos que el código puede leer. Cada rasgo dice lo suyo; no hay regla
+ * general.
+ */
+export interface FeatureUses {
+  max: UsesMax;
+  /** El dado que se tira al gastar un uso (Dados de Superioridad). */
+  die?: string | { byLevel: LevelValue<string>[] };
+  shortRest: RestRecovery | { byLevel: LevelValue<RestRecovery>[] };
+  longRest: 'all';
+  /** También se recuperan todos al tirar Iniciativa. */
+  onInitiative?: 'all';
+}
+
+/** Lo que hace el propio descanso por tener este rasgo. Modificadores con su signo. */
+export interface RestEffects {
+  /** Curtido (Montaraz): −1 al terminar un descanso corto. */
+  exhaustionModifier?: number;
+  /** Ingenioso: obtiene Inspiración Heroica al terminar un descanso largo. */
+  heroicInspiration?: boolean;
+}
+
 export interface FeatureBlock {
   title: string;
   description: string;
+  uses?: FeatureUses;
+  onShortRest?: RestEffects;
+  onLongRest?: RestEffects;
 }
 
 export const COMPENDIUM_CATALOGS = {
@@ -109,7 +164,7 @@ export const COMPENDIUM_CATALOGS = {
      * situarlo: espada larga 15, escudo 10, armadura de cuero 10, cota de
      * malla 75, paquete de explorador 10.
      */
-    startingGold: 100,
+    startingGold: 150,
   },
   abilities: [
     { key: 'STR', name: 'Fuerza', short: 'FUE' },
@@ -140,16 +195,12 @@ export const COMPENDIUM_CATALOGS = {
     { key: 'trato_con_animales', name: 'Trato con Animales', ability: 'WIS' },
   ],
   tools: [
-    { key: 'material_alquimico', name: 'Material Alquímico' },
-    { key: 'material_curacion', name: 'Material de Curación' },
+    { key: 'equipo_aventurero', name: 'Equipo de Aventurero' },
     { key: 'herramientas_artesano', name: 'Herramientas de Artesano' },
     { key: 'herramientas_ladron', name: 'Herramientas de Ladrón' },
-    { key: 'instrumento_musical', name: 'Instrumento Musical' },
-    { key: 'herramientas_navegacion', name: 'Herramientas de Navegación' },
-    { key: 'kit_herboristeria', name: 'Kit de Herboristería' },
-    { key: 'kit_disfraz', name: 'Kit de Disfraz' },
-    { key: 'kit_falsificacion', name: 'Kit de Falsificación' },
-    { key: 'kit_venenos', name: 'Kit de Envenenador' },
+    { key: 'instrumento_musical', name: 'Instrumentos Musicales' },
+    { key: 'material_alquimico', name: 'Material Alquímico' },
+    { key: 'material_curacion', name: 'Material de Curación' },
   ],
   armors: [
     { key: 'armadura_ligera', name: 'Armadura Ligera' },
@@ -164,66 +215,57 @@ export const COMPENDIUM_CATALOGS = {
     { key: 'armas_marciales_sutileza', name: 'Armas Marciales con Sutileza' },
     { key: 'armas_improvisadas', name: 'Armas Improvisadas' },
   ],
-  // Las ocho Propiedades de Maestria del SRD 5.2. Son una lista fija, como
-  // los tipos de dano: cada arma apunta a una por su clave. Las armas
-  // concretas NO viven aqui, viven en la coleccion compendiumitems.
-  // Fuente: SRD 5.2 (CC BY 4.0). Traduccion propia.
+  // Las ocho Propiedades de Maestria, del documento EQUIPO Y TESOROS.
+  // Cada arma apunta a una por su clave. Las armas concretas NO viven aqui,
+  // viven en la coleccion compendiumitems.
   masteries: [
     {
-      key: 'hendidura',
-      name: 'Hendidura',
-      original: 'Cleave',
+      key: 'acoso',
+      name: 'Acoso',
       description:
-        'Al impactar con un ataque cuerpo a cuerpo con esta arma, puedes realizar un ataque adicional con ella contra otra criatura situada a 5 pies o menos de la primera y dentro de tu alcance. Si impactas, infliges el dano del arma sin anadir tu modificador de caracteristica, salvo que sea negativo. Una vez por turno.',
+        'Cuando impactas a una criatura con un arma que posee esta propiedad y le infliges daño, obtienes Ventaja en tu siguiente tirada de ataque contra esa misma criatura, siempre que la realices antes de finalizar tu próximo turno. La Ventaja se consume al realizar la tirada, independientemente de si el ataque impacta o falla.',
     },
     {
-      key: 'roce',
-      name: 'Roce',
-      original: 'Graze',
+      key: 'ataque-rapido',
+      name: 'Ataque Rápido',
       description:
-        'Si tu tirada de ataque con esta arma falla, el objetivo recibe igualmente dano igual al modificador de caracteristica que usaste para atacar. El tipo de dano es el del arma.',
-    },
-    {
-      key: 'tajo',
-      name: 'Tajo',
-      original: 'Nick',
-      description:
-        'El ataque adicional que concede la propiedad Ligera puedes realizarlo como parte de la accion Atacar en vez de como Accion Adicional. Una vez por turno.',
-    },
-    {
-      key: 'empuje',
-      name: 'Empuje',
-      original: 'Push',
-      description:
-        'Al impactar, puedes empujar al objetivo hasta 10 pies en linea recta alejandolo de ti, siempre que sea de tamano Grande o menor.',
-    },
-    {
-      key: 'mella',
-      name: 'Mella',
-      original: 'Sap',
-      description:
-        'Al impactar, el objetivo tiene Desventaja en su siguiente tirada de ataque antes del comienzo de tu proximo turno.',
-    },
-    {
-      key: 'lentitud',
-      name: 'Lentitud',
-      original: 'Slow',
-      description:
-        'Al impactar causando dano, puedes reducir la Velocidad del objetivo en 10 pies hasta el comienzo de tu proximo turno. Varios impactos no la reducen mas de 10 pies en total.',
+        'Cuando realizas el ataque adicional permitido por la propiedad Ligera utilizando un arma que posee esta Maestría, puedes efectuarlo como parte de la misma Acción Atacar, en lugar de utilizar una Acción Adicional. Solo puedes realizar este ataque adicional una vez por turno.',
     },
     {
       key: 'derribo',
       name: 'Derribo',
-      original: 'Topple',
       description:
-        'Al impactar, puedes obligar al objetivo a realizar una salvacion de Constitucion con CD 8 + tu modificador de caracteristica + tu Bonificador de Competencia. Si falla, queda Derribado.',
+        'Cuando impactas a una criatura con un arma que posee esta propiedad, puedes obligarla a realizar una Tirada de Salvación de Constitución. La CD es igual a 8 + tu Bonificador de Competencia + el modificador de característica utilizado para realizar el ataque. Si falla la salvación, la criatura queda Derribada.',
     },
     {
-      key: 'hostigamiento',
-      name: 'Hostigamiento',
-      original: 'Vex',
+      key: 'desequilibrar',
+      name: 'Desequilibrar',
       description:
-        'Al impactar causando dano, tienes Ventaja en tu siguiente tirada de ataque contra esa criatura antes del final de tu proximo turno.',
+        'Cuando impactas a una criatura con un arma que posee esta propiedad, puedes imponerle Desventaja en su siguiente tirada de ataque, siempre que la realice antes del comienzo de tu próximo turno.',
+    },
+    {
+      key: 'empuje',
+      name: 'Empuje',
+      description:
+        'Cuando impactas a una criatura con un arma que posee esta propiedad, puedes empujarla hasta 10 pies en dirección opuesta a ti.',
+    },
+    {
+      key: 'frenar',
+      name: 'Frenar',
+      description:
+        'Cuando impactas a una criatura con un arma que posee esta propiedad y le infliges daño, puedes reducir su Velocidad en 10 pies hasta el comienzo de tu próximo turno. Una criatura no puede sufrir una reducción superior a 10 pies por esta propiedad, aunque reciba varios impactos.',
+    },
+    {
+      key: 'hendedura',
+      name: 'Hendedura',
+      description:
+        'Cuando impactas a una criatura con un ataque cuerpo a cuerpo utilizando un arma que posee esta propiedad, puedes realizar inmediatamente otra tirada de ataque con la misma arma contra una segunda criatura situada a 5 pies o menos de la primera y dentro de tu alcance. Si el segundo ataque impacta, infliges el daño normal del arma, pero sin añadir un modificador de característica positivo al daño. Puedes utilizar Hendedura una vez por turno.',
+    },
+    {
+      key: 'refilon',
+      name: 'Refilón',
+      description:
+        'Cuando fallas una tirada de ataque con un arma que posee esta propiedad, infliges al objetivo una cantidad de daño igual al modificador de característica utilizado para realizar el ataque. Este daño es del mismo tipo que el arma. Si el modificador es 0 o negativo, no infliges daño. El ataque sigue considerándose fallido y no activa otros efectos que requieran impactar.',
     },
   ],
   damageTypes: [
@@ -235,7 +277,6 @@ export const COMPENDIUM_CATALOGS = {
   choiceTypes: [
     { key: 'SKILL_PROFICIENCY', label: 'Competencia en Habilidad' },
     { key: 'TOOL_PROFICIENCY', label: 'Competencia en Herramienta' },
-    { key: 'INSTRUMENT_PROFICIENCY', label: 'Competencia en Instrumento Musical' },
     { key: 'SKILL_EXPERTISE', label: 'Pericia en Habilidad' },
     {
       key: 'SKILL_PROFICIENCY_OR_EXPERTISE',
