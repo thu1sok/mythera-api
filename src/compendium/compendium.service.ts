@@ -33,6 +33,11 @@ import {
   CompendiumItemDocument,
   ItemCategory,
 } from '../schema/wiki/compendium/compendium-item.schema';
+import {
+  CompendiumCondition,
+  CompendiumConditionDocument,
+  ConditionCategory,
+} from '../schema/wiki/compendium/compendium-condition.schema';
 import { COMPENDIUM_CATALOGS } from '../schema/wiki/compendium/compendium-mechanics.types';
 import { DEFAULT_HUMAN_TRAITS } from './seeds/human-traits.seed';
 import { DEFAULT_ORIGIN_FEATS } from './seeds/origin-feats.seed';
@@ -44,6 +49,7 @@ import { DEFAULT_GENERAL_FEATS } from './seeds/general-feats.seed';
 import { DEFAULT_COMBAT_TECHNIQUES } from './seeds/combat-techniques.seed';
 import { DEFAULT_RACES } from './seeds/races.seed';
 import { ITEMS_SEED } from './seeds/items.seed';
+import { DEFAULT_CONDITIONS } from './seeds/conditions.seed';
 
 @Injectable()
 export class CompendiumService implements OnModuleInit {
@@ -62,6 +68,8 @@ export class CompendiumService implements OnModuleInit {
     private readonly raceModel: Model<CompendiumRaceDocument>,
     @InjectModel(CompendiumItem.name)
     private readonly itemModel: Model<CompendiumItemDocument>,
+    @InjectModel(CompendiumCondition.name)
+    private readonly conditionModel: Model<CompendiumConditionDocument>,
   ) {}
 
   async onModuleInit() {
@@ -156,6 +164,15 @@ export class CompendiumService implements OnModuleInit {
       }
       await this.pruneDefaultItems();
 
+      // 9. Seed Conditions
+      for (const condition of DEFAULT_CONDITIONS) {
+        await this.conditionModel.updateOne(
+          { slug: condition.slug },
+          { $set: { ...condition, isDefault: true } },
+          { upsert: true },
+        );
+      }
+
       this.logger.log(
         'Compendio Durmiente: Datos por defecto sincronizados correctamente.',
       );
@@ -228,6 +245,7 @@ export class CompendiumService implements OnModuleInit {
       archetypes,
       races,
       items,
+      conditions,
     ] = await Promise.all([
       this.findAllTraits(),
       this.findAllFeats('ORIGIN'),
@@ -237,6 +255,7 @@ export class CompendiumService implements OnModuleInit {
       this.findAllArchetypes(),
       this.findAllRaces(),
       this.findAllItems(),
+      this.findAllConditions(),
     ]);
 
     return {
@@ -249,6 +268,7 @@ export class CompendiumService implements OnModuleInit {
       archetypes,
       races,
       items,
+      conditions,
     };
   }
 
@@ -503,6 +523,17 @@ export class CompendiumService implements OnModuleInit {
       );
     }
     await this.raceModel.findByIdAndDelete(id).exec();
+  }
+
+  // ==========================================
+  // 7. ESTADOS Y CONDICIONES
+  // ==========================================
+  // Estados: solo lectura. Son reglas de la mesa, no se crean desde la wiki.
+  async findAllConditions(
+    category?: ConditionCategory,
+  ): Promise<CompendiumCondition[]> {
+    const filter = category ? { category } : {};
+    return this.conditionModel.find(filter).sort({ name: 1 }).exec();
   }
 
   // ==========================================

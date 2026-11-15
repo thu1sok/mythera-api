@@ -359,11 +359,13 @@ export const DEFAULT_GENERAL_FEATS: Partial<CompendiumFeat>[] = [
       },
       {
         title: 'Golpe Amortiguador',
+        uses: { max: 1, shortRest: 'all', longRest: 'all', onInitiative: 'all' },
         description:
           'Cuando impactes a una criatura con un arma, puedes obtener una cantidad de Puntos de Golpe Temporales igual al resultado de los dados de daño del arma. Una vez uses este beneficio, no podrás volver a hacerlo hasta que tires Iniciativa o finalices un Descanso Corto o Largo.',
       },
       {
         title: 'Instintos Agudizados',
+        uses: { max: 1, shortRest: 'all', longRest: 'all', onInitiative: 'all' },
         description:
           'Cuando falles una prueba de característica, puedes tirar 1d6 y sumar el resultado a la tirada, lo que podría convertir el fallo en un éxito. Una vez uses este beneficio, no podrás volver a hacerlo hasta que tires Iniciativa o finalices un Descanso Corto o Largo.',
       },
@@ -484,6 +486,7 @@ export const DEFAULT_GENERAL_FEATS: Partial<CompendiumFeat>[] = [
       },
       {
         title: 'Carne Endurecida',
+        uses: { max: 1, shortRest: 'all', longRest: 'all' },
         description:
           'Inmediatamente después de recibir daño contundente, perforante o cortante, puedes usar una Reacción para obtener Resistencia a ese tipo de daño hasta el comienzo de tu siguiente turno. Una vez uses este beneficio, no podrás volver a hacerlo hasta que finalices un Descanso Corto o Largo.',
       },
@@ -1665,6 +1668,7 @@ export const DEFAULT_GENERAL_FEATS: Partial<CompendiumFeat>[] = [
       },
       {
         title: 'Animar a un Aliado',
+        uses: { max: { proficiencyBonus: true }, shortRest: 'none', longRest: 'all' },
         description:
           'Como Acción Adicional, elige a un aliado que puedas ver a 30 pies de ti. Ese aliado obtiene una cantidad de Puntos de Golpe Temporales igual a 2d6 + el modificador de la característica aumentada mediante esta dote. Puedes usar esta Acción Adicional un número de veces igual a tu Bonificador de Competencia y recuperas todos los usos gastados al finalizar un Descanso Largo.',
       },

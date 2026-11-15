@@ -11,6 +11,7 @@ import {
 import { CompendiumService } from './compendium.service';
 import { FeatCategory } from '../schema/wiki/compendium/compendium-feat.schema';
 import { ItemCategory } from '../schema/wiki/compendium/compendium-item.schema';
+import { ConditionCategory } from '../schema/wiki/compendium/compendium-condition.schema';
 
 @Controller('compendium')
 export class CompendiumController {
@@ -171,5 +172,13 @@ export class CompendiumController {
   async deleteItem(@Param('id') id: string) {
     await this.compendiumService.deleteItem(id);
     return { message: 'Objeto eliminado correctamente' };
+  }
+
+  // ==========================================
+  // 7. ESTADOS Y CONDICIONES
+  // ==========================================
+  @Get('conditions')
+  async findAllConditions(@Query('category') category?: ConditionCategory) {
+    return this.compendiumService.findAllConditions(category);
   }
 }

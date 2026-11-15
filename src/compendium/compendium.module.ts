@@ -26,6 +26,10 @@ import {
   CompendiumItem,
   CompendiumItemSchema,
 } from '../schema/wiki/compendium/compendium-item.schema';
+import {
+  CompendiumCondition,
+  CompendiumConditionSchema,
+} from '../schema/wiki/compendium/compendium-condition.schema';
 
 @Module({
   imports: [
@@ -36,6 +40,7 @@ import {
       { name: CompendiumArchetype.name, schema: CompendiumArchetypeSchema },
       { name: CompendiumRace.name, schema: CompendiumRaceSchema },
       { name: CompendiumItem.name, schema: CompendiumItemSchema },
+      { name: CompendiumCondition.name, schema: CompendiumConditionSchema },
     ]),
   ],
   controllers: [CompendiumController],
