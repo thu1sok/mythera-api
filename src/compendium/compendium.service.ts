@@ -220,7 +220,7 @@ export class CompendiumService implements OnModuleInit {
     const base = (text || 'item')
       .toString()
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
@@ -327,7 +327,7 @@ export class CompendiumService implements OnModuleInit {
   // ==========================================
   async findAllFeats(category?: FeatCategory): Promise<CompendiumFeat[]> {
     const filter = category ? { category } : {};
-    return this.featModel.find(filter).sort({ name: 1 }).exec();
+    return this.featModel.find(filter).sort({ level: 1, name: 1 }).exec();
   }
 
   async createFeat(dto: Partial<CompendiumFeat>): Promise<CompendiumFeat> {
@@ -545,6 +545,10 @@ export class CompendiumService implements OnModuleInit {
       .find(filter)
       .sort({ category: 1, costInCopper: 1, name: 1 })
       .exec();
+  }
+
+  async findItemBySlug(slug: string): Promise<CompendiumItem | null> {
+    return this.itemModel.findOne({ slug }).exec();
   }
 
   async createItem(dto: Partial<CompendiumItem>): Promise<CompendiumItem> {

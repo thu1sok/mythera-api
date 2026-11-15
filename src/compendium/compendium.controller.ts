@@ -151,11 +151,16 @@ export class CompendiumController {
   }
 
   // ==========================================
-  // 6. EQUIPO
+  // 6. OBJETOS, ARMAS Y EQUIPO
   // ==========================================
   @Get('items')
   async findAllItems(@Query('category') category?: ItemCategory) {
     return this.compendiumService.findAllItems(category);
+  }
+
+  @Get('items/:slug')
+  async findItemBySlug(@Param('slug') slug: string) {
+    return this.compendiumService.findItemBySlug(slug);
   }
 
   @Post('items')
