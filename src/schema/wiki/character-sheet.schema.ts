@@ -138,6 +138,44 @@ export interface ResourceUse {
   used: number;
 }
 
+/**
+ * Modificadores (BRIEFING-FICHA-COMPLETA §3). Las categorias son una lista
+ * cerrada; ver mythera-map-app/src/app/core/rules/modifiers.ts.
+ */
+export type ModifierCategory =
+  | 'abilityScore'
+  | 'abilityModifier'
+  | 'save'
+  | 'skill'
+  | 'armorClass'
+  | 'speed'
+  | 'initiative'
+  | 'attack'
+  | 'damage'
+  | 'hitPointsMax';
+
+/** Un numero (+2, -1), o Ventaja o Desventaja. */
+export type ModifierEffect = number | 'advantage' | 'disadvantage';
+
+export interface ModifierLine {
+  category: ModifierCategory;
+  /** Caracteristica (STR...) o habilidad (percepcion...), en las que lo piden. */
+  target?: string;
+  effect: ModifierEffect;
+}
+
+/** Una herida, una secuela o un bonificador temporal, enganchado a la ficha. */
+export interface ModifierPack {
+  id: string;
+  name: string;
+  description?: string;
+  modifiers: ModifierLine[];
+  /** Se lo lleva el descanso largo. Por defecto false: permanente. */
+  untilLongRest: boolean;
+  /** Una Secuela (la de la tercera caida). */
+  sequela?: boolean;
+}
+
 export interface CharacterState {
   hpCurrent: number;
   hpTemp: number;
@@ -173,6 +211,12 @@ export interface CharacterState {
    * experienceByLevel), asi que las fichas de antes no se migran.
    */
   experience?: number;
+  /**
+   * Paquetes de modificadores aplicados, COPIADOS (no por referencia al
+   * catalogo de tipos de herida): si alguien borra un tipo del catalogo, las
+   * fichas que lo tenian no cambian. Ausente = ninguno.
+   */
+  modifierPacks?: ModifierPack[];
 }
 
 export interface EquippedItem {
