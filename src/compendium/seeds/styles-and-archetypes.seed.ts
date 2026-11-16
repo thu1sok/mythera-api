@@ -610,7 +610,7 @@ export const DEFAULT_ARCHETYPES: Partial<CompendiumArchetype>[] = [
             label: 'Elige el tipo de Compañero Animal (Animal terrestre o Animal aéreo)',
             type: 'ANIMAL_COMPANION',
             count: 1,
-            allowedOptions: ['animal_terrestre', 'animal_aereo'],
+            allowedOptions: ['animal-terrestre', 'animal-aereo'],
           },
           {
             id: 'alimanero_lv3_ability',
