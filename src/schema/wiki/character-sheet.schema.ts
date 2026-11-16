@@ -196,8 +196,9 @@ export interface CharacterState {
    * cae otra vez antes de anotar la secuela: no se pierde ninguna.
    */
   falls: number;
-  /** Secuelas permanentes, en texto libre: las decide el máster. */
-  sequelae: string[];
+  // sequelae (Secuelas en texto libre) ya no existe: desde el 16-nov-2026 cada
+  // Secuela es un paquete de modifierPacks con sequela: true. El front migra
+  // las de texto al abrir la ficha y la guarda ya migrada; no conviven.
   /**
    * Atender Heridas recibidas desde el último descanso. El límite es el
    * Bonificador de Competencia de quien recibe el tratamiento (esta ficha),
