@@ -70,7 +70,12 @@ export interface ConditionTable {
   rows: string[][];
 }
 
-@Schema({ timestamps: true })
+/**
+ * minimize: false. Sin esto, Mongoose quita los objetos vacíos al pasar a
+ * JSON y los estados sin efectos mecánicos (Asustado, Influenciado, Oculto)
+ * llegaban al front sin `mechanics`: la ficha de mesa se quedaba en blanco.
+ */
+@Schema({ timestamps: true, minimize: false })
 export class CompendiumCondition {
   @Prop({ required: true, unique: true })
   slug: string;
