@@ -146,13 +146,18 @@ export type ModifierCategory =
   | 'abilityScore'
   | 'abilityModifier'
   | 'save'
+  | 'allSaves'
+  | 'allChecks'
   | 'skill'
   | 'armorClass'
   | 'speed'
   | 'initiative'
   | 'attack'
+  | 'meleeAttack'
+  | 'rangedAttack'
   | 'damage'
-  | 'hitPointsMax';
+  | 'hitPointsMax'
+  | 'deathSave';
 
 /** Un numero (+2, -1), o Ventaja o Desventaja. */
 export type ModifierEffect = number | 'advantage' | 'disadvantage';

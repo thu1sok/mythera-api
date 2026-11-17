@@ -13,13 +13,18 @@ const CATEGORIES: Record<ModifierCategory, { target: 'ability' | 'skill' | null;
   abilityScore: { target: 'ability', dice: false },
   abilityModifier: { target: 'ability', dice: true },
   save: { target: 'ability', dice: true },
+  allSaves: { target: null, dice: true },
+  allChecks: { target: null, dice: true },
   skill: { target: 'skill', dice: true },
   armorClass: { target: null, dice: false },
   speed: { target: null, dice: false },
   initiative: { target: null, dice: true },
   attack: { target: null, dice: true },
+  meleeAttack: { target: null, dice: true },
+  rangedAttack: { target: null, dice: true },
   damage: { target: null, dice: false },
   hitPointsMax: { target: null, dice: false },
+  deathSave: { target: null, dice: true },
 };
 
 export interface WoundTypeInput {
