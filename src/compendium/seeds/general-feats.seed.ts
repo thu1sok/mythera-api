@@ -532,7 +532,9 @@ export const DEFAULT_GENERAL_FEATS: Partial<CompendiumFeat>[] = [
           'Puedes desenfundar o guardar dos armas que no tengan la propiedad A Dos Manos cuando normalmente solo podrías desenfundar o guardar una.',
       },
     ],
-    grants: {},
+    grants: {
+      offHandAnyMeleeWeapon: true,
+    },
     choices: [
       {
         id: 'doble_empunadura_asi',

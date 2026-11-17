@@ -87,6 +87,16 @@ export interface CompendiumDirectGrants {
   acBonusWhileArmored?: number; // +1 a la CA llevando armadura (Defensa)
   duelingDamageBonus?: number; // +2 al daño con un arma a una mano y nada más (Duelo)
   thrownDamageBonus?: number; // +2 al daño con armas Arrojadizas
+  /**
+   * Combate con Dos Armas («Mano Torpe»): el ataque adicional de la propiedad
+   * Ligera suma el modificador de característica al daño.
+   */
+  offHandAbilityDamage?: boolean;
+  /**
+   * Doble Empuñadura: el ataque adicional puede hacerse con cualquier arma
+   * cuerpo a cuerpo que no sea A Dos Manos, aunque no sea Ligera.
+   */
+  offHandAnyMeleeWeapon?: boolean;
   blindsight?: number; // percepción sin vista, en pies (Combate a Ciegas)
 
   // --- Raza ---

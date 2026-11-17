@@ -250,6 +250,11 @@ export interface EquippedItem {
   /** Sutil: la característica elegida para atacar. Ausente = la mejor de FUE y DES. */
   finesseAbility?: 'STR' | 'DEX';
   /**
+   * Mano torpe: esta arma va en la otra mano y da el ataque adicional de la
+   * propiedad Ligera. Solo una a la vez. Ausente = no. Se recuerda por arma.
+   */
+  offHand?: boolean;
+  /**
    * Munición: cuántas se han gastado desde la última recuperación. Hace falta
    * para devolver la mitad tras el combate; ausente = ninguna.
    */
