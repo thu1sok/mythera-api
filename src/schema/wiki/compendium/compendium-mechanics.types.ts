@@ -74,6 +74,12 @@ export interface CompendiumDirectGrants {
   damageAtZeroIsFailure?: boolean;
   heroicInspirationOnLongRest?: boolean; // e.g., Ingenioso
   /**
+   * Músico («Canción Reconfortante»): al terminar un descanso corto o largo,
+   * gastar 1 uso de Instrumentos Musicales da Inspiración Heroica a tantos
+   * aliados como el modificador de Carisma (mínimo 1).
+   */
+  restSongInspiration?: boolean;
+  /**
    * Media competencia en las habilidades en las que NO tengas competencia
    * (Erudito, 'Conocimientos generales'). No es un nivel de competencia de
    * una habilidad concreta: se aplica a todas las que te falten.

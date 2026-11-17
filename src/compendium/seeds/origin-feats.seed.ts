@@ -318,6 +318,7 @@ export const DEFAULT_ORIGIN_FEATS: Partial<CompendiumFeat>[] = [
     // hay nada entre lo que elegir, así que la competencia es fija.
     grants: {
       fixedProficiencies: [{ category: 'TOOL', value: 'instrumento_musical' }],
+      restSongInspiration: true,
     },
     choices: [],
   },
