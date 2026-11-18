@@ -88,6 +88,9 @@ export const DEFAULT_COMBAT_TECHNIQUES: Partial<CompendiumFeat>[] = [
           'Cuando realices un ataque adicional con un arma que tenga la propiedad Ligera, puedes añadir tu modificador de característica al daño de ese ataque si no lo estás añadiendo ya.',
       },
     ],
+    grants: {
+      offHandAbilityDamage: true,
+    },
   },
   {
     slug: 'duelo',

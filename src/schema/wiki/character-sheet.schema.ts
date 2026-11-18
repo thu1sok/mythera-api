@@ -138,6 +138,49 @@ export interface ResourceUse {
   used: number;
 }
 
+/**
+ * Modificadores (BRIEFING-FICHA-COMPLETA §3). Las categorias son una lista
+ * cerrada; ver mythera-map-app/src/app/core/rules/modifiers.ts.
+ */
+export type ModifierCategory =
+  | 'abilityScore'
+  | 'abilityModifier'
+  | 'save'
+  | 'allSaves'
+  | 'allChecks'
+  | 'skill'
+  | 'armorClass'
+  | 'speed'
+  | 'initiative'
+  | 'attack'
+  | 'meleeAttack'
+  | 'rangedAttack'
+  | 'damage'
+  | 'hitPointsMax'
+  | 'deathSave';
+
+/** Un numero (+2, -1), o Ventaja o Desventaja. */
+export type ModifierEffect = number | 'advantage' | 'disadvantage';
+
+export interface ModifierLine {
+  category: ModifierCategory;
+  /** Caracteristica (STR...) o habilidad (percepcion...), en las que lo piden. */
+  target?: string;
+  effect: ModifierEffect;
+}
+
+/** Una herida, una secuela o un bonificador temporal, enganchado a la ficha. */
+export interface ModifierPack {
+  id: string;
+  name: string;
+  description?: string;
+  modifiers: ModifierLine[];
+  /** Se lo lleva el descanso largo. Por defecto false: permanente. */
+  untilLongRest: boolean;
+  /** Una Secuela (la de la tercera caida). */
+  sequela?: boolean;
+}
+
 export interface CharacterState {
   hpCurrent: number;
   hpTemp: number;
@@ -158,14 +201,28 @@ export interface CharacterState {
    * cae otra vez antes de anotar la secuela: no se pierde ninguna.
    */
   falls: number;
-  /** Secuelas permanentes, en texto libre: las decide el máster. */
-  sequelae: string[];
+  // sequelae (Secuelas en texto libre) ya no existe: desde el 16-nov-2026 cada
+  // Secuela es un paquete de modifierPacks con sequela: true. El front migra
+  // las de texto al abrir la ficha y la guarda ya migrada; no conviven.
   /**
    * Atender Heridas recibidas desde el último descanso. El límite es el
    * Bonificador de Competencia de quien recibe el tratamiento (esta ficha),
    * no el de quien lo aplica; los dos descansos lo devuelven entero.
    */
   treatmentsUsed: number;
+  /**
+   * Puntos de experiencia (BRIEFING-NIVELES). Los suma el jugador en mesa.
+   * NO mueven build.level: solo dicen a que nivel se tiene derecho, y la
+   * ficha avisa. Ausente = el minimo del nivel actual (systemRules.
+   * experienceByLevel), asi que las fichas de antes no se migran.
+   */
+  experience?: number;
+  /**
+   * Paquetes de modificadores aplicados, COPIADOS (no por referencia al
+   * catalogo de tipos de herida): si alguien borra un tipo del catalogo, las
+   * fichas que lo tenian no cambian. Ausente = ninguno.
+   */
+  modifierPacks?: ModifierPack[];
 }
 
 export interface EquippedItem {
@@ -192,6 +249,11 @@ export interface EquippedItem {
   versatileTwoHands?: boolean;
   /** Sutil: la característica elegida para atacar. Ausente = la mejor de FUE y DES. */
   finesseAbility?: 'STR' | 'DEX';
+  /**
+   * Mano torpe: esta arma va en la otra mano y da el ataque adicional de la
+   * propiedad Ligera. Solo una a la vez. Ausente = no. Se recuerda por arma.
+   */
+  offHand?: boolean;
   /**
    * Munición: cuántas se han gastado desde la última recuperación. Hace falta
    * para devolver la mitad tras el combate; ausente = ninguna.

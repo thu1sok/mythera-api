@@ -1,10 +1,15 @@
 /**
  * Migra las fichas de personaje al equipo del documento EQUIPO Y TESOROS.
  *
- * Toca dos campos de cada ficha:
+ * Toca tres campos de cada ficha:
  *   - equipment[].itemSlug
  *   - build.weaponMasterySlugs (son slugs de ARMAS de compendiumitems, no
  *     claves de maestria: se migran con el mismo mapeo que el equipo)
+ *   - build.choices[].selected de las elecciones de tipo WEAPON_MASTERY, con
+ *     el mismo mapeo. Son la misma informacion que weaponMasterySlugs: si
+ *     solo se renombra una, la ficha dice dos cosas distintas, y cualquier
+ *     cosa que rehaga el build desde las choices deshace el renombre (paso
+ *     con Vinicius en local: 'garrote-pesado' en una y 'clava' en la otra).
  *
  * Reglas:
  *   - Si el slug existe en compendiumitems, se queda.
@@ -54,7 +59,13 @@ function assertLocal(uri) {
   }
 }
 
-function migrateSheet(sheet, valid) {
+/** El slug nuevo de una maestria, el mismo si ya vale, o null si se quita. */
+function migrateMastery(slug, valid) {
+  if (valid.has(slug)) return slug;
+  return ITEM_MAP[slug] && valid.has(ITEM_MAP[slug]) ? ITEM_MAP[slug] : null;
+}
+
+function migrateSheet(sheet, valid, masteryChoiceIds) {
   const removed = [];
   const renamed = [];
 
@@ -82,16 +93,45 @@ function migrateSheet(sheet, valid) {
 
   const masteries = [];
   for (const slug of sheet.build?.weaponMasterySlugs ?? []) {
-    let to = slug;
-    if (!valid.has(slug)) {
-      to = ITEM_MAP[slug] && valid.has(ITEM_MAP[slug]) ? ITEM_MAP[slug] : null;
+    const to = migrateMastery(slug, valid);
+    if (to !== slug) {
       if (to) renamed.push(`maestria: ${slug} -> ${to}`);
       else removed.push(`maestria: ${slug}`);
     }
     if (to && !masteries.includes(to)) masteries.push(to);
   }
 
-  return { equipment, masteries, removed, renamed };
+  // Las choices de maestria, con el mismo mapeo. Las demas, tal cual.
+  let choicesChanged = false;
+  const choices = (sheet.build?.choices ?? []).map((c) => {
+    if (!masteryChoiceIds.has(c.choiceId)) return c;
+    const selected = [];
+    for (const slug of c.selected ?? []) {
+      const to = migrateMastery(slug, valid);
+      if (to !== slug) {
+        choicesChanged = true;
+        if (to) renamed.push(`eleccion ${c.choiceId}: ${slug} -> ${to}`);
+        else removed.push(`eleccion ${c.choiceId}: ${slug}`);
+      }
+      if (to && !selected.includes(to)) selected.push(to);
+    }
+    return { ...c, selected };
+  });
+
+  return { equipment, masteries, choices, choicesChanged, removed, renamed };
+}
+
+/** Los ids de las elecciones de tipo WEAPON_MASTERY, sacados del compendio (no de los nombres). */
+async function masteryChoiceIdsOf(db) {
+  const ids = new Set();
+  const scan = (list) => (list ?? []).forEach((c) => c.type === 'WEAPON_MASTERY' && ids.add(c.id));
+  for (const s of await db.collection('compendiumstyles').find().toArray()) {
+    scan(s.choices);
+    (s.progression ?? []).forEach((p) => scan(p.choices));
+  }
+  for (const a of await db.collection('compendiumarchetypes').find().toArray()) (a.features ?? []).forEach((f) => scan(f.choices));
+  for (const col of ['compendiumfeats', 'humantraits']) for (const d of await db.collection(col).find().toArray()) scan(d.choices);
+  return ids;
 }
 
 async function main() {
@@ -108,6 +148,8 @@ async function main() {
     throw new Error(`compendiumitems solo tiene ${items.length} objetos. ¿Se ha sembrado el compendio?`);
   }
   const valid = new Set(items.map((i) => i.slug));
+  const masteryChoiceIds = await masteryChoiceIdsOf(db);
+  if (masteryChoiceIds.size === 0) throw new Error('El compendio no tiene elecciones de maestria. ¿Se ha sembrado?');
 
   const sheetsCol = db.collection('charactersheets');
   const sheets = await sheetsCol.find({}).toArray();
@@ -122,14 +164,20 @@ async function main() {
 
   console.log(apply ? 'APLICANDO' : 'SIMULACRO (usa --apply para escribir)');
   for (const sheet of sheets) {
-    const r = migrateSheet(sheet, valid);
-    console.log(`\n== ${sheet.name}`);
+    const r = migrateSheet(sheet, valid, masteryChoiceIds);
+    console.log(`\n== ${sheet.name ?? sheet._id}`);
     console.log(`   renombrado: ${r.renamed.join(', ') || 'nada'}`);
     console.log(`   quitado:    ${r.removed.join(', ') || 'nada'}`);
     if (apply && (r.renamed.length || r.removed.length)) {
       await sheetsCol.updateOne(
         { _id: sheet._id },
-        { $set: { equipment: r.equipment, 'build.weaponMasterySlugs': r.masteries } },
+        {
+          $set: {
+            equipment: r.equipment,
+            'build.weaponMasterySlugs': r.masteries,
+            ...(r.choicesChanged ? { 'build.choices': r.choices } : {}),
+          },
+        },
       );
     }
   }

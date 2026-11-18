@@ -5,6 +5,7 @@ import { PlacesModule } from './places/places.module';
 import { NarrativeArcsModule } from './narrative-arcs/narrative-arcs.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { GodsModule } from './gods/gods.module';
+import { WoundTypesModule } from './wound-types/wound-types.module';
 import { EternalsModule } from './eternals/eternals.module';
 import { RacesModule } from './races/races.module';
 import { SubracesModule } from './subraces/subraces.module';
@@ -40,6 +41,7 @@ dotenv.config();
     NarrativeArcsModule,
     TimelineModule,
     GodsModule,
+    WoundTypesModule,
     EternalsModule,
     RacesModule,
     SubracesModule,
